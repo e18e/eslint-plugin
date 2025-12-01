@@ -1,5 +1,6 @@
 import type {ESLint} from 'eslint';
 import {recommended} from './configs/recommended.js';
+import {preferArrayAt} from './rules/prefer-array-at.js';
 
 const plugin: ESLint.Plugin = {
   meta: {
@@ -7,7 +8,9 @@ const plugin: ESLint.Plugin = {
     namespace: 'e18e'
   },
   configs: {},
-  rules: {}
+  rules: {
+    'prefer-array-at': preferArrayAt
+  }
 };
 
 plugin.configs!.recommended = recommended(plugin);

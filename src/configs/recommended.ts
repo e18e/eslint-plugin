@@ -4,5 +4,7 @@ export const recommended = (plugin: ESLint.Plugin): Linter.Config => ({
   plugins: {
     e18e: plugin
   },
-  rules: {}
+  rules: {
+    'e18e/prefer-array-at': 'error'
+  }
 });
