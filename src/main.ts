@@ -1,6 +1,7 @@
 import type {ESLint} from 'eslint';
 import {recommended} from './configs/recommended.js';
 import {preferArrayAt} from './rules/prefer-array-at.js';
+import {preferArrayIncludes} from './rules/prefer-array-includes.js';
 
 const plugin: ESLint.Plugin = {
   meta: {
@@ -9,7 +10,8 @@ const plugin: ESLint.Plugin = {
   },
   configs: {},
   rules: {
-    'prefer-array-at': preferArrayAt
+    'prefer-array-at': preferArrayAt,
+    'prefer-array-includes': preferArrayIncludes
   }
 };
 
