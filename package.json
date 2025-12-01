@@ -1,0 +1,49 @@
+{
+  "name": "@e18e/eslint-plugin",
+  "version": "0.0.1",
+  "description": "The official e18e ESLint plugin for modernizing code and improving performance.",
+  "keywords": [
+    "eslint",
+    "e18e",
+    "performance",
+    "bloat",
+    "perf"
+  ],
+  "files": [
+    "lib",
+    "!lib/**/*.test.js",
+    "!lib/**/*.test.d.ts"
+  ],
+  "homepage": "https://github.com/e18e/eslint-plugin#readme",
+  "bugs": {
+    "url": "https://github.com/e18e/eslint-plugin/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/e18e/eslint-plugin.git"
+  },
+  "license": "MIT",
+  "author": "James Garbutt (https://github.com/43081j)",
+  "type": "module",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsgo",
+    "test": "vitest run",
+    "format": "prettier --write src",
+    "lint": "npm run lint:js && npm run lint:format",
+    "lint:js": "eslint src",
+    "lint:format": "prettier --check src"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@typescript/native-preview": "^7.0.0-dev.20251201.1",
+    "@vitest/coverage-v8": "^4.0.14",
+    "eslint": "^9.39.1",
+    "prettier": "^3.7.3",
+    "typescript-eslint": "^8.48.0",
+    "vitest": "^4.0.14"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0"
+  }
+}
