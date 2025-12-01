@@ -1,4 +1,5 @@
 import type {ESLint} from 'eslint';
+import {recommended} from './configs/recommended.js';
 
 const plugin: ESLint.Plugin = {
   meta: {
@@ -8,5 +9,7 @@ const plugin: ESLint.Plugin = {
   configs: {},
   rules: {}
 };
+
+plugin.configs!.recommended = recommended(plugin);
 
 export default plugin;

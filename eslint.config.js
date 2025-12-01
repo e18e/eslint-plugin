@@ -15,6 +15,9 @@ export default defineConfig([
       tseslint.configs.strict,
       eslintjs.configs.recommended,
       eslintPlugin.configs.recommended
-    ]
+    ],
+    rules: {
+      '@typescript-eslint/no-non-null-assertion': 'off'
+    }
   },
 ]);
