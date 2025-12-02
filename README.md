@@ -2,6 +2,9 @@
 
 > The official e18e ESLint plugin for modernizing JavaScript/TypeScript code and improving performance.
 
+> [!WARNING]
+> This is an experimental, unpublished project for now. Once we have settled on the scope, we will publish it and announce it to start getting community feedback.
+
 This plugin focuses on applying the e18e community's best practices and advise to JavaScript/TypeScript codebases.
 
 ## Overview
