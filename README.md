@@ -47,7 +47,7 @@ export default [
     rules: {
       'e18e/prefer-array-at': 'error',
       'e18e/prefer-array-fill': 'error',
-      'e18e/prefer-array-includes': 'error'
+      'e18e/prefer-includes': 'error'
     }
   }
 ];
@@ -61,7 +61,7 @@ export default [
 |------|-------------|-------------|---------|
 | [prefer-array-at](./src/rules/prefer-array-at.ts) | Prefer `Array.prototype.at()` over length-based indexing | ✅ | ✅ |
 | [prefer-array-fill](./src/rules/prefer-array-fill.ts) | Prefer `Array.prototype.fill()` over `Array.from()` or `map()` with constant values | ✅ | ✅ |
-| [prefer-array-includes](./src/rules/prefer-array-includes.ts) | Prefer `Array.prototype.includes()` over `indexOf()` comparisons | ✅ | ✅ |
+| [prefer-includes](./src/rules/prefer-includes.ts) | Prefer `.includes()` over `indexOf()` comparisons for arrays and strings | ✅ | ✅ |
 | [prefer-array-to-reversed](./src/rules/prefer-array-to-reversed.ts) | Prefer `Array.prototype.toReversed()` over copying and reversing arrays | ✅ | ✅ |
 
 ### Module replacements
