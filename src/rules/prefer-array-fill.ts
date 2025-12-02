@@ -1,4 +1,4 @@
-import type {Rule} from 'eslint';
+import type {Rule, SourceCode} from 'eslint';
 import type {
   CallExpression,
   ArrowFunctionExpression,
@@ -14,6 +14,20 @@ function isConstantCallback(
       (func.body.body.length === 1 &&
         func.body.body[0]?.type === 'ReturnStatement'))
   );
+}
+
+function getCallbackValueText(
+  func: ArrowFunctionExpression | FunctionExpression,
+  sourceCode: SourceCode
+): string | undefined {
+  if (func.body.type === 'BlockStatement') {
+    const returnStmt = func.body.body[0];
+    if (returnStmt?.type === 'ReturnStatement' && returnStmt.argument) {
+      return sourceCode.getText(returnStmt.argument);
+    }
+    return undefined;
+  }
+  return sourceCode.getText(func.body);
 }
 
 export const preferArrayFill: Rule.RuleModule = {
@@ -68,19 +82,9 @@ export const preferArrayFill: Rule.RuleModule = {
               const lengthValue = firstArg.properties[0].value;
               const lengthText = sourceCode.getText(lengthValue);
 
-              let valueText: string;
-              if (secondArg.body.type === 'BlockStatement') {
-                const returnStmt = secondArg.body.body[0];
-                if (
-                  returnStmt?.type === 'ReturnStatement' &&
-                  returnStmt.argument
-                ) {
-                  valueText = sourceCode.getText(returnStmt.argument);
-                } else {
-                  return;
-                }
-              } else {
-                valueText = sourceCode.getText(secondArg.body);
+              const valueText = getCallbackValueText(secondArg, sourceCode);
+              if (!valueText) {
+                return;
               }
 
               context.report({
@@ -129,22 +133,14 @@ export const preferArrayFill: Rule.RuleModule = {
                 callback.type === 'FunctionExpression') &&
               isConstantCallback(callback)
             ) {
-              if (!arrayArg) return;
+              if (!arrayArg) {
+                return;
+              }
               const lengthText = sourceCode.getText(arrayArg);
 
-              let valueText: string;
-              if (callback.body.type === 'BlockStatement') {
-                const returnStmt = callback.body.body[0];
-                if (
-                  returnStmt?.type === 'ReturnStatement' &&
-                  returnStmt.argument
-                ) {
-                  valueText = sourceCode.getText(returnStmt.argument);
-                } else {
-                  return;
-                }
-              } else {
-                valueText = sourceCode.getText(callback.body);
+              const valueText = getCallbackValueText(callback, sourceCode);
+              if (!valueText) {
+                return;
               }
 
               context.report({
