@@ -1,8 +1,12 @@
 import type {ESLint} from 'eslint';
 import {recommended} from './configs/recommended.js';
+import {modernization} from './configs/modernization.js';
+import {moduleReplacements} from './configs/module-replacements.js';
+import {performanceImprovements} from './configs/performance-improvements.js';
 import {preferArrayAt} from './rules/prefer-array-at.js';
 import {preferArrayFill} from './rules/prefer-array-fill.js';
 import {preferArrayIncludes} from './rules/prefer-array-includes.js';
+import {rules as dependRules} from 'eslint-plugin-depend';
 
 const plugin: ESLint.Plugin = {
   meta: {
@@ -13,10 +17,14 @@ const plugin: ESLint.Plugin = {
   rules: {
     'prefer-array-at': preferArrayAt,
     'prefer-array-fill': preferArrayFill,
-    'prefer-array-includes': preferArrayIncludes
+    'prefer-array-includes': preferArrayIncludes,
+    ...dependRules
   }
 };
 
 plugin.configs!.recommended = recommended(plugin);
+plugin.configs!.modernization = modernization(plugin);
+plugin.configs!.moduleReplacements = moduleReplacements(plugin);
+plugin.configs!.performanceImprovements = performanceImprovements(plugin);
 
 export default plugin;
