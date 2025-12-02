@@ -1,5 +1,5 @@
 import {RuleTester} from 'eslint';
-import {preferArrayIncludes} from './prefer-array-includes.js';
+import {preferIncludes} from './prefer-includes.js';
 
 const ruleTester = new RuleTester({
   languageOptions: {
@@ -8,7 +8,7 @@ const ruleTester = new RuleTester({
   }
 });
 
-ruleTester.run('prefer-array-includes', preferArrayIncludes, {
+ruleTester.run('prefer-includes', preferIncludes, {
   valid: [
     // Already using .includes()
     'if (arr.includes(item)) {}',

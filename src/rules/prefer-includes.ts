@@ -135,12 +135,12 @@ function checkUnaryExpression(
   }
 }
 
-export const preferArrayIncludes: Rule.RuleModule = {
+export const preferIncludes: Rule.RuleModule = {
   meta: {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer Array.prototype.includes() over indexOf() comparisons',
+        'Prefer .includes() over indexOf() comparisons for arrays and strings',
       recommended: true
     },
     fixable: 'code',
