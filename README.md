@@ -63,6 +63,8 @@ export default [
 | [prefer-array-fill](./src/rules/prefer-array-fill.ts) | Prefer `Array.prototype.fill()` over `Array.from()` or `map()` with constant values | ✅ | ✅ |
 | [prefer-includes](./src/rules/prefer-includes.ts) | Prefer `.includes()` over `indexOf()` comparisons for arrays and strings | ✅ | ✅ |
 | [prefer-array-to-reversed](./src/rules/prefer-array-to-reversed.ts) | Prefer `Array.prototype.toReversed()` over copying and reversing arrays | ✅ | ✅ |
+| [prefer-exponentiation-operator](./src/rules/prefer-exponentiation-operator.ts) | Prefer the exponentiation operator `**` over `Math.pow()` | ✅ | ✅ |
+| [prefer-object-has-own](./src/rules/prefer-object-has-own.ts) | Prefer `Object.hasOwn()` over `Object.prototype.hasOwnProperty.call()` and `obj.hasOwnProperty()` | ✅ | ✅ |
 
 ### Module replacements
 

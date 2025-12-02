@@ -8,6 +8,7 @@ import {preferArrayFill} from './rules/prefer-array-fill.js';
 import {preferIncludes} from './rules/prefer-includes.js';
 import {preferArrayToReversed} from './rules/prefer-array-to-reversed.js';
 import {preferExponentiationOperator} from './rules/prefer-exponentiation-operator.js';
+import {preferObjectHasOwn} from './rules/prefer-object-has-own.js';
 import {rules as dependRules} from 'eslint-plugin-depend';
 
 const plugin: ESLint.Plugin = {
@@ -22,6 +23,7 @@ const plugin: ESLint.Plugin = {
     'prefer-includes': preferIncludes,
     'prefer-array-to-reversed': preferArrayToReversed,
     'prefer-exponentiation-operator': preferExponentiationOperator,
+    'prefer-object-has-own': preferObjectHasOwn,
     ...dependRules
   }
 };
