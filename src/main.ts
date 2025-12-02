@@ -1,6 +1,7 @@
 import type {ESLint} from 'eslint';
 import {recommended} from './configs/recommended.js';
 import {preferArrayAt} from './rules/prefer-array-at.js';
+import {preferArrayFill} from './rules/prefer-array-fill.js';
 import {preferArrayIncludes} from './rules/prefer-array-includes.js';
 
 const plugin: ESLint.Plugin = {
@@ -11,6 +12,7 @@ const plugin: ESLint.Plugin = {
   configs: {},
   rules: {
     'prefer-array-at': preferArrayAt,
+    'prefer-array-fill': preferArrayFill,
     'prefer-array-includes': preferArrayIncludes
   }
 };
