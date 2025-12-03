@@ -1,34 +1,6 @@
 import type {Rule} from 'eslint';
 import type {CallExpression} from 'estree';
-
-function isCopyCall(node: CallExpression): boolean {
-  if (
-    node.callee.type !== 'MemberExpression' ||
-    node.callee.property.type !== 'Identifier'
-  ) {
-    return false;
-  }
-
-  const methodName = node.callee.property.name;
-
-  if (
-    (methodName === 'concat' || methodName === 'slice') &&
-    node.arguments.length === 0
-  ) {
-    return true;
-  }
-
-  if (
-    methodName === 'slice' &&
-    node.arguments.length === 1 &&
-    node.arguments[0]?.type === 'Literal' &&
-    node.arguments[0].value === 0
-  ) {
-    return true;
-  }
-
-  return false;
-}
+import {isCopyCall} from '../utils/ast.js';
 
 export const preferArrayToReversed: Rule.RuleModule = {
   meta: {
