@@ -10,6 +10,7 @@ export const modernization = (plugin: ESLint.Plugin): Linter.Config => ({
     'e18e/prefer-includes': 'error',
     'e18e/prefer-array-to-reversed': 'error',
     'e18e/prefer-array-to-sorted': 'error',
+    'e18e/prefer-array-to-spliced': 'error',
     'e18e/prefer-object-has-own': 'error'
   }
 });

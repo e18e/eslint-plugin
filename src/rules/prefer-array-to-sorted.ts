@@ -1,6 +1,6 @@
 import type {Rule} from 'eslint';
 import type {CallExpression} from 'estree';
-import {isCopyCall} from '../utils/ast.js';
+import {getArrayFromCopyPattern, formatArguments} from '../utils/ast.js';
 
 export const preferArrayToSorted: Rule.RuleModule = {
   meta: {
@@ -30,48 +30,11 @@ export const preferArrayToSorted: Rule.RuleModule = {
         }
 
         const sortCallee = node.callee.object;
+        const arrayNode = getArrayFromCopyPattern(sortCallee);
 
-        if (
-          sortCallee.type === 'CallExpression' &&
-          isCopyCall(sortCallee) &&
-          sortCallee.callee.type === 'MemberExpression'
-        ) {
-          const arrayNode = sortCallee.callee.object;
+        if (arrayNode) {
           const arrayText = sourceCode.getText(arrayNode);
-          const sortArgs = node.arguments;
-          const argsText =
-            sortArgs.length > 0
-              ? sortArgs.map((arg) => sourceCode.getText(arg)).join(', ')
-              : '';
-
-          context.report({
-            node,
-            messageId: 'preferToSorted',
-            data: {
-              array: arrayText
-            },
-            fix(fixer) {
-              return fixer.replaceText(
-                node,
-                `${arrayText}.toSorted(${argsText})`
-              );
-            }
-          });
-          return;
-        }
-
-        if (
-          sortCallee.type === 'ArrayExpression' &&
-          sortCallee.elements.length === 1 &&
-          sortCallee.elements[0]?.type === 'SpreadElement'
-        ) {
-          const spreadArg = sortCallee.elements[0].argument;
-          const arrayText = sourceCode.getText(spreadArg);
-          const sortArgs = node.arguments;
-          const argsText =
-            sortArgs.length > 0
-              ? sortArgs.map((arg) => sourceCode.getText(arg)).join(', ')
-              : '';
+          const argsText = formatArguments(node.arguments, sourceCode);
 
           context.report({
             node,
