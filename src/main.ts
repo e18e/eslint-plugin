@@ -11,6 +11,7 @@ import {preferArrayToSorted} from './rules/prefer-array-to-sorted.js';
 import {preferArrayToSpliced} from './rules/prefer-array-to-spliced.js';
 import {preferExponentiationOperator} from './rules/prefer-exponentiation-operator.js';
 import {preferObjectHasOwn} from './rules/prefer-object-has-own.js';
+import {preferSpreadSyntax} from './rules/prefer-spread-syntax.js';
 import {rules as dependRules} from 'eslint-plugin-depend';
 
 const plugin: ESLint.Plugin = {
@@ -28,6 +29,7 @@ const plugin: ESLint.Plugin = {
     'prefer-array-to-spliced': preferArrayToSpliced,
     'prefer-exponentiation-operator': preferExponentiationOperator,
     'prefer-object-has-own': preferObjectHasOwn,
+    'prefer-spread-syntax': preferSpreadSyntax,
     ...dependRules
   }
 };
