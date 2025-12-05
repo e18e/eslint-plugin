@@ -10,6 +10,7 @@ import {preferArrayToReversed} from './rules/prefer-array-to-reversed.js';
 import {preferArrayToSorted} from './rules/prefer-array-to-sorted.js';
 import {preferArrayToSpliced} from './rules/prefer-array-to-spliced.js';
 import {preferExponentiationOperator} from './rules/prefer-exponentiation-operator.js';
+import {preferNullishCoalescing} from './rules/prefer-nullish-coalescing.js';
 import {preferObjectHasOwn} from './rules/prefer-object-has-own.js';
 import {preferSpreadSyntax} from './rules/prefer-spread-syntax.js';
 import {preferUrlCanParse} from './rules/prefer-url-canparse.js';
@@ -29,6 +30,7 @@ const plugin: ESLint.Plugin = {
     'prefer-array-to-sorted': preferArrayToSorted,
     'prefer-array-to-spliced': preferArrayToSpliced,
     'prefer-exponentiation-operator': preferExponentiationOperator,
+    'prefer-nullish-coalescing': preferNullishCoalescing,
     'prefer-object-has-own': preferObjectHasOwn,
     'prefer-spread-syntax': preferSpreadSyntax,
     'prefer-url-canparse': preferUrlCanParse,

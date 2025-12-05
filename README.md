@@ -66,6 +66,7 @@ export default [
 | [prefer-array-to-sorted](./src/rules/prefer-array-to-sorted.ts) | Prefer `Array.prototype.toSorted()` over copying and sorting arrays | ✅ | ✅ |
 | [prefer-array-to-spliced](./src/rules/prefer-array-to-spliced.ts) | Prefer `Array.prototype.toSpliced()` over copying and splicing arrays | ✅ | ✅ |
 | [prefer-exponentiation-operator](./src/rules/prefer-exponentiation-operator.ts) | Prefer the exponentiation operator `**` over `Math.pow()` | ✅ | ✅ |
+| [prefer-nullish-coalescing](./src/rules/prefer-nullish-coalescing.ts) | Prefer nullish coalescing operator (`??` and `??=`) over verbose null checks | ✅ | ✅ |
 | [prefer-object-has-own](./src/rules/prefer-object-has-own.ts) | Prefer `Object.hasOwn()` over `Object.prototype.hasOwnProperty.call()` and `obj.hasOwnProperty()` | ✅ | ✅ |
 | [prefer-spread-syntax](./src/rules/prefer-spread-syntax.ts) | Prefer spread syntax over `Array.concat()`, `Object.assign({}, ...)`, and `Function.apply()` | ✅ | ✅ |
 | [prefer-url-canparse](./src/rules/prefer-url-canparse.ts) | Prefer `URL.canParse()` over try-catch blocks for URL validation | ✅ | 💡 |
