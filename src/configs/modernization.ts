@@ -11,6 +11,7 @@ export const modernization = (plugin: ESLint.Plugin): Linter.Config => ({
     'e18e/prefer-array-to-reversed': 'error',
     'e18e/prefer-array-to-sorted': 'error',
     'e18e/prefer-array-to-spliced': 'error',
+    'e18e/prefer-nullish-coalescing': 'error',
     'e18e/prefer-object-has-own': 'error',
     'e18e/prefer-spread-syntax': 'error',
     'e18e/prefer-url-canparse': 'error'
