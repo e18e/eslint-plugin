@@ -65,20 +65,14 @@ function isNullishCheck(
       return null;
     }
 
-    if (
-      !((leftIsNull && rightIsUndefined) || (leftIsUndefined && rightIsNull))
-    ) {
-      return null;
-    }
+    if ((leftIsNull && rightIsUndefined) || (leftIsUndefined && rightIsNull)) {
+      if (expr.operator === '||' && leftOp === '===' && rightOp === '===') {
+        return {value: leftLeft, checksForNullish: true};
+      }
 
-    // value === null || value === undefined
-    if (expr.operator === '||' && leftOp === '===' && rightOp === '===') {
-      return {value: leftLeft, checksForNullish: true};
-    }
-
-    // value !== null && value !== undefined
-    if (expr.operator === '&&' && leftOp === '!==' && rightOp === '!==') {
-      return {value: leftLeft, checksForNullish: false};
+      if (expr.operator === '&&' && leftOp === '!==' && rightOp === '!==') {
+        return {value: leftLeft, checksForNullish: false};
+      }
     }
   }
 
@@ -111,39 +105,26 @@ export const preferNullishCoalescing: Rule.RuleModule = {
 
         if (checkResult) {
           const {value, checksForNullish} = checkResult;
+          const compareNode = checksForNullish
+            ? node.alternate
+            : node.consequent;
+          const defaultNode = checksForNullish
+            ? node.consequent
+            : node.alternate;
 
-          if (checksForNullish) {
-            // value == null ? default : value
-            if (areExpressionsEquivalent(sourceCode, value, node.alternate)) {
-              context.report({
-                node,
-                messageId: 'preferNullishCoalescing',
-                fix(fixer) {
-                  const valueText = sourceCode.getText(value);
-                  const defaultText = sourceCode.getText(node.consequent);
-                  return fixer.replaceText(
-                    node,
-                    `${valueText} ?? ${defaultText}`
-                  );
-                }
-              });
-            }
-          } else {
-            // value != null ? value : default
-            if (areExpressionsEquivalent(sourceCode, value, node.consequent)) {
-              context.report({
-                node,
-                messageId: 'preferNullishCoalescing',
-                fix(fixer) {
-                  const valueText = sourceCode.getText(value);
-                  const defaultText = sourceCode.getText(node.alternate);
-                  return fixer.replaceText(
-                    node,
-                    `${valueText} ?? ${defaultText}`
-                  );
-                }
-              });
-            }
+          if (areExpressionsEquivalent(sourceCode, value, compareNode)) {
+            context.report({
+              node,
+              messageId: 'preferNullishCoalescing',
+              fix(fixer) {
+                const valueText = sourceCode.getText(value);
+                const defaultText = sourceCode.getText(defaultNode);
+                return fixer.replaceText(
+                  node,
+                  `${valueText} ?? ${defaultText}`
+                );
+              }
+            });
           }
         }
       },
