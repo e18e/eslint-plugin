@@ -35,13 +35,13 @@
     "lint:format": "prettier --check src"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@typescript/native-preview": "^7.0.0-dev.20251201.1",
-    "@vitest/coverage-v8": "^4.0.14",
-    "eslint": "^9.39.1",
+    "@eslint/js": "^9.39.2",
+    "@typescript/native-preview": "^7.0.0-dev.20251214.1",
+    "@vitest/coverage-v8": "^4.0.15",
+    "eslint": "^9.39.2",
     "eslint-plugin-eslint-plugin": "^7.2.0",
-    "prettier": "^3.7.3",
-    "typescript-eslint": "^8.48.0",
+    "prettier": "^3.7.4",
+    "typescript-eslint": "^8.49.0",
     "vitest": "^4.0.14"
   },
   "peerDependencies": {
