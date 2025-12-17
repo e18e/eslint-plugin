@@ -16,8 +16,9 @@ const ruleTester = new RuleTester({
     parserOptions: {
       projectService: {
         allowDefaultProject: ['*.ts'],
-        tsconfigRootDir: rootDir
-      }
+        defaultProject: './tsconfig.json'
+      },
+      tsconfigRootDir: rootDir
     }
   }
 });
