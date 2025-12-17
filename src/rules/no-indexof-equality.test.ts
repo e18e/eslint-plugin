@@ -1,5 +1,5 @@
 import {RuleTester} from 'eslint';
-import {preferOptimizedIndexof} from './prefer-optimized-indexof.js';
+import {noIndexOfEquality} from './no-indexof-equality.js';
 import * as tseslint from 'typescript-eslint';
 import * as path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -22,7 +22,7 @@ const ruleTester = new RuleTester({
   }
 });
 
-ruleTester.run('prefer-optimized-indexof', preferOptimizedIndexof, {
+ruleTester.run('no-indexof-equality', noIndexOfEquality, {
   valid: [
     // checking if an item does NOT exist
     {

@@ -86,7 +86,7 @@ export default [
 
 | Rule | Description | Recommended | Fixable | Type-Aware |
 |------|-------------|-------------|---------|--------------|
-| [prefer-optimized-indexof](./src/rules/prefer-optimized-indexof.ts) | Prefer `startsWith()` for strings and direct array access over `indexOf()` equality checks | ❌ | ✅ | ✅ |
+| [no-indexof-equality](./src/rules/no-indexof-equality.ts) | Prefer `startsWith()` for strings and direct array access over `indexOf()` equality checks | ❌ | ✅ | ✅ |
 
 ## License
 

@@ -3,7 +3,7 @@ import type {BinaryExpression, CallExpression} from 'estree';
 import type {TSESTree} from '@typescript-eslint/typescript-estree';
 import {getTypedParserServices} from '../utils/typescript.js';
 
-export const preferOptimizedIndexof: Rule.RuleModule = {
+export const noIndexOfEquality: Rule.RuleModule = {
   meta: {
     type: 'suggestion',
     docs: {
