@@ -1,0 +1,30 @@
+import type {Rule} from 'eslint';
+import type {
+  TSNode,
+  TSToken,
+  TSESTree
+} from '@typescript-eslint/typescript-estree';
+import type ts from 'typescript';
+
+export interface ParserServices {
+  emitDecoratorMetadata: boolean | undefined;
+  experimentalDecorators: boolean | undefined;
+  isolatedDeclarations: boolean | undefined;
+  esTreeNodeToTSNodeMap: WeakMap<TSESTree.Node, TSNode | TSToken>;
+  tsNodeToESTreeNodeMap: WeakMap<TSNode | TSToken, TSESTree.Node>;
+  getSymbolAtLocation: (node: TSESTree.Node) => ts.Symbol | undefined;
+  getTypeAtLocation: (node: TSESTree.Node) => ts.Type;
+  program: ts.Program;
+}
+
+export function getTypedParserServices(
+  context: Readonly<Rule.RuleContext>
+): ParserServices {
+  if (context.sourceCode.parserServices.program == null) {
+    throw new Error(
+      `You have used a rule which requires type information. Please ensure you have typescript-eslint setup alongside this plugin and configured to enable type-aware linting. See https://typescript-eslint.io/getting-started/typed-linting for more information.`
+    );
+  }
+
+  return context.sourceCode.parserServices as ParserServices;
+}

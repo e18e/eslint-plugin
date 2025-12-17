@@ -36,12 +36,13 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@typescript-eslint/typescript-estree": "^8.50.0",
     "@typescript/native-preview": "^7.0.0-dev.20251201.1",
     "@vitest/coverage-v8": "^4.0.14",
     "eslint": "^9.39.1",
     "eslint-plugin-eslint-plugin": "^7.2.0",
     "prettier": "^3.7.3",
-    "typescript-eslint": "^8.48.0",
+    "typescript-eslint": "^8.50.0",
     "vitest": "^4.0.14"
   },
   "peerDependencies": {
