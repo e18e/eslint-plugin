@@ -14,6 +14,7 @@ import {preferNullishCoalescing} from './rules/prefer-nullish-coalescing.js';
 import {preferObjectHasOwn} from './rules/prefer-object-has-own.js';
 import {preferSpreadSyntax} from './rules/prefer-spread-syntax.js';
 import {preferUrlCanParse} from './rules/prefer-url-canparse.js';
+import {noIndexOfEquality} from './rules/no-indexof-equality.js';
 import {rules as dependRules} from 'eslint-plugin-depend';
 
 const plugin: ESLint.Plugin = {
@@ -34,6 +35,7 @@ const plugin: ESLint.Plugin = {
     'prefer-object-has-own': preferObjectHasOwn,
     'prefer-spread-syntax': preferSpreadSyntax,
     'prefer-url-canparse': preferUrlCanParse,
+    'no-indexof-equality': noIndexOfEquality,
     ...dependRules
   }
 };

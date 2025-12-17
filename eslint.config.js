@@ -13,8 +13,8 @@ export default defineConfig([
       'eslint-plugin': eslintPlugin
     },
     extends: [
-      tseslint.configs.strict,
       eslintjs.configs.recommended,
+      tseslint.configs.strict,
       eslintPlugin.configs.recommended
     ],
     rules: {

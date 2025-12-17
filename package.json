@@ -27,7 +27,7 @@
   "type": "module",
   "main": "lib/main.js",
   "scripts": {
-    "build": "tsgo",
+    "build": "tsc",
     "test": "vitest run",
     "format": "prettier --write src",
     "lint": "npm run lint:js && npm run lint:format",
@@ -36,12 +36,15 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "@typescript/native-preview": "^7.0.0-dev.20251201.1",
+    "@types/node": "^25.0.3",
+    "@typescript-eslint/rule-tester": "^8.50.0",
+    "@typescript-eslint/typescript-estree": "^8.50.0",
     "@vitest/coverage-v8": "^4.0.14",
     "eslint": "^9.39.1",
     "eslint-plugin-eslint-plugin": "^7.2.0",
     "prettier": "^3.7.3",
-    "typescript-eslint": "^8.48.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.0",
     "vitest": "^4.0.14"
   },
   "peerDependencies": {
