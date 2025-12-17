@@ -1,8 +1,14 @@
-import {RuleTester} from 'eslint';
+import {RuleTester} from '@typescript-eslint/rule-tester';
 import {noIndexOfEquality} from './no-indexof-equality.js';
 import * as tseslint from 'typescript-eslint';
 import * as path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {afterAll, describe, it} from 'vitest';
+
+RuleTester.afterAll = afterAll;
+RuleTester.describe = describe;
+RuleTester.it = it;
+RuleTester.itOnly = it.only;
 
 const rootDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -23,7 +29,7 @@ const ruleTester = new RuleTester({
   }
 });
 
-ruleTester.run('no-indexof-equality', noIndexOfEquality, {
+ruleTester.run('no-indexof-equality', noIndexOfEquality as never, {
   valid: [
     // checking if an item does NOT exist
     {
