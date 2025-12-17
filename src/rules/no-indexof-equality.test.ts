@@ -3,12 +3,6 @@ import {noIndexOfEquality} from './no-indexof-equality.js';
 import * as tseslint from 'typescript-eslint';
 import * as path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {afterAll, describe, it} from 'vitest';
-
-RuleTester.afterAll = afterAll;
-RuleTester.describe = describe;
-RuleTester.it = it;
-RuleTester.itOnly = it.only;
 
 const rootDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
