@@ -73,20 +73,12 @@ export const preferOptimizedIndexof: Rule.RuleModule = {
         const type = services.getTypeAtLocation(objectNode as TSESTree.Node);
 
         if (!type) {
-          console.log('JG0 - NO TYPE', type);
           return;
         }
-
-        console.log('JG1 - TYPE', checker.typeToString(type));
 
         const objectText = sourceCode.getText(objectNode);
         const searchText = sourceCode.getText(searchArg);
         const stringType = checker.getStringType();
-
-        console.log(
-          'JG2 - IS STRING?',
-          checker.isTypeAssignableTo(type, stringType)
-        );
 
         if (checker.isTypeAssignableTo(type, stringType)) {
           if (compareIndex === 0) {
@@ -103,8 +95,6 @@ export const preferOptimizedIndexof: Rule.RuleModule = {
           }
           return;
         }
-
-        console.log('JG3 - IS ARRAY?', checker.isArrayType(type));
 
         if (checker.isArrayType(type)) {
           context.report({

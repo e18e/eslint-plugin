@@ -4,7 +4,10 @@ import * as tseslint from 'typescript-eslint';
 import * as path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-const rootDir = path.resolve('../../', fileURLToPath(import.meta.url));
+const rootDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../..'
+);
 const ruleTester = new RuleTester({
   languageOptions: {
     ecmaVersion: 2022,
