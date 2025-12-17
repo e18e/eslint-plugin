@@ -1,7 +1,10 @@
 import {RuleTester} from 'eslint';
 import {preferOptimizedIndexof} from './prefer-optimized-indexof.js';
 import * as tseslint from 'typescript-eslint';
+import * as path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
+const rootDir = path.resolve('../../', fileURLToPath(import.meta.url));
 const ruleTester = new RuleTester({
   languageOptions: {
     ecmaVersion: 2022,
@@ -9,7 +12,8 @@ const ruleTester = new RuleTester({
     parser: tseslint.parser,
     parserOptions: {
       projectService: {
-        allowDefaultProject: ['*.ts']
+        allowDefaultProject: ['*.ts'],
+        tsconfigRootDir: rootDir
       }
     }
   }
