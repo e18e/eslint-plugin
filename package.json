@@ -42,6 +42,7 @@
     "@vitest/coverage-v8": "^4.0.16",
     "eslint": "^9.39.2",
     "eslint-plugin-eslint-plugin": "^7.2.0",
+    "oxlint": "^1.34.0",
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.50.0",
