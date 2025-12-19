@@ -21,6 +21,11 @@ ruleTester.run('prefer-spread-syntax', preferSpreadSyntax, {
     'Array.from(iterable, x => x * 2);',
     'Array.from(arr, mapper);',
 
+    // Array.from with object literal or spread
+    'Array.from({length: 5});',
+    'Array.from({length: N}).fill(0);',
+    'Array.from(...args).fill(0)',
+
     // Already using spread
     'const arr = [...iterable];',
 
