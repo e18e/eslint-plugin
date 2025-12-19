@@ -6,5 +6,7 @@ export const performanceImprovements = (
   plugins: {
     e18e: plugin
   },
-  rules: {}
+  rules: {
+    'e18e/prefer-timer-args': 'error'
+  }
 });
