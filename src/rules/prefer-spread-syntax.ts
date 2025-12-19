@@ -13,7 +13,7 @@ export const preferSpreadSyntax: Rule.RuleModule = {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer spread syntax over Array.concat(), Object.assign({}, ...), and Function.apply()',
+        'Prefer spread syntax over Array.concat(), Array.from(), Object.assign({}, ...), and Function.apply()',
       recommended: true
     },
     fixable: 'code',
@@ -21,6 +21,8 @@ export const preferSpreadSyntax: Rule.RuleModule = {
     messages: {
       preferSpreadArray:
         'Use spread syntax [...arr, ...other] instead of arr.concat(other)',
+      preferSpreadArrayFrom:
+        'Use spread syntax [...iterable] instead of Array.from(iterable) when no mapper function is provided',
       preferSpreadObject:
         'Use spread syntax {...a, ...b} instead of Object.assign({}, a, b)',
       preferSpreadFunction:
@@ -52,6 +54,18 @@ export const preferSpreadSyntax: Rule.RuleModule = {
             .join(', ');
           replacement = `[${spreadParts}]`;
           messageId = 'preferSpreadArray';
+        }
+        // Array.from(iterable) with no mapper
+        else if (
+          node.callee.object.type === 'Identifier' &&
+          node.callee.object.name === 'Array' &&
+          node.callee.property.type === 'Identifier' &&
+          node.callee.property.name === 'from' &&
+          node.arguments.length === 1
+        ) {
+          const iterableText = sourceCode.getText(node.arguments[0]!);
+          replacement = `[...${iterableText}]`;
+          messageId = 'preferSpreadArrayFrom';
         }
         // Object.assign({...}, ...)
         else if (

@@ -17,6 +17,13 @@ ruleTester.run('prefer-spread-syntax', preferSpreadSyntax, {
     // concat with no arguments
     'arr.concat();',
 
+    // Array.from with mapper function (should keep as-is)
+    'Array.from(iterable, x => x * 2);',
+    'Array.from(arr, mapper);',
+
+    // Already using spread
+    'const arr = [...iterable];',
+
     // Object.assign with non-literal first argument
     'Object.assign(target, source);',
     'Object.assign(getTarget(), source);',
@@ -82,6 +89,58 @@ ruleTester.run('prefer-spread-syntax', preferSpreadSyntax, {
           messageId: 'preferSpreadArray',
           line: 1,
           column: 16
+        }
+      ]
+    },
+
+    // Array.from with single argument
+    {
+      code: 'const arr = Array.from(iterable);',
+      output: 'const arr = [...iterable];',
+      errors: [
+        {
+          messageId: 'preferSpreadArrayFrom',
+          line: 1,
+          column: 13
+        }
+      ]
+    },
+
+    // Array.from with Set
+    {
+      code: 'const arr = Array.from(new Set([1, 2, 3]));',
+      output: 'const arr = [...new Set([1, 2, 3])];',
+      errors: [
+        {
+          messageId: 'preferSpreadArrayFrom',
+          line: 1,
+          column: 13
+        }
+      ]
+    },
+
+    // Array.from with method call
+    {
+      code: 'const values = Array.from(map.values());',
+      output: 'const values = [...map.values()];',
+      errors: [
+        {
+          messageId: 'preferSpreadArrayFrom',
+          line: 1,
+          column: 16
+        }
+      ]
+    },
+
+    // Array.from in expression
+    {
+      code: 'console.log(Array.from(items));',
+      output: 'console.log([...items]);',
+      errors: [
+        {
+          messageId: 'preferSpreadArrayFrom',
+          line: 1,
+          column: 13
         }
       ]
     },
@@ -206,9 +265,11 @@ ruleTester.run('prefer-spread-syntax', preferSpreadSyntax, {
     // Multiple issues in one file
     {
       code: `const arr = [1, 2].concat([3, 4]);
+const fromArray = Array.from(items);
 const obj = Object.assign({}, {a: 1}, {b: 2});
 const max = Math.max.apply(null, numbers);`,
       output: `const arr = [...[1, 2], ...[3, 4]];
+const fromArray = [...items];
 const obj = {...{a: 1}, ...{b: 2}};
 const max = Math.max(...numbers);`,
       errors: [
@@ -218,13 +279,18 @@ const max = Math.max(...numbers);`,
           column: 13
         },
         {
-          messageId: 'preferSpreadObject',
+          messageId: 'preferSpreadArrayFrom',
           line: 2,
+          column: 19
+        },
+        {
+          messageId: 'preferSpreadObject',
+          line: 3,
           column: 13
         },
         {
           messageId: 'preferSpreadFunction',
-          line: 3,
+          line: 4,
           column: 13
         }
       ]
