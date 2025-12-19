@@ -63,6 +63,18 @@ If you're using oxlint, you can enable the e18e plugin by adding it to your `.ox
 }
 ```
 
+You can enable the recommended configuration by copying the rules from each of the ESLint configuration files into your `.oxlintrc.json` file.
+
+- [modernization configuration](./src/configs/modernization.ts)
+- [module replacements configuration](./src/configs/module-replacements.ts)
+- [performance improvements configuration](./src/configs/performance-improvements.ts)
+
+Copying these rules into your `rules` object will achieve the same effect as using the recommended configuration in ESLint.
+
+> [!NOTE]
+> Our type-aware rules depend on TypeScript ESLint's parser, which means they
+> will not work with oxlint at this time.
+
 ## Rules
 
 **Legend:**
