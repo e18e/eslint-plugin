@@ -7,6 +7,7 @@ export const performanceImprovements = (
     e18e: plugin
   },
   rules: {
+    'e18e/prefer-array-from-map': 'error',
     'e18e/prefer-timer-args': 'error'
   }
 });
