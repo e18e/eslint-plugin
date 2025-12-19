@@ -87,6 +87,7 @@ export default [
 | Rule | Description | Recommended | Fixable | Requires Types |
 |------|-------------|-------------|---------|----------------|
 | [no-indexof-equality](./src/rules/no-indexof-equality.ts) | Prefer `startsWith()` for strings and direct array access over `indexOf()` equality checks | ✖️ | ✅ | ✅ |
+| [prefer-timer-args](./src/rules/prefer-timer-args.ts) | Prefer passing function and arguments directly to `setTimeout`/`setInterval` instead of wrapping in an arrow function or using `bind` | ✅ | ✅ | ✖️ |
 
 ## License
 
