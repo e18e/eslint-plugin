@@ -18,7 +18,7 @@ export const preferArrayAt: Rule.RuleModule = {
     const sourceCode = context.sourceCode;
 
     return {
-      MemberExpression(node: MemberExpression) {
+      MemberExpression(node: MemberExpression & Rule.NodeParentExtension) {
         if (!node.computed || !node.property) {
           return;
         }
@@ -57,6 +57,15 @@ export const preferArrayAt: Rule.RuleModule = {
         const lengthArrayText = sourceCode.getText(leftMember.object);
 
         if (arrayText !== lengthArrayText) {
+          return;
+        }
+
+        const parent = node.parent;
+        if (
+          parent &&
+          parent.type === 'AssignmentExpression' &&
+          parent.left === node
+        ) {
           return;
         }
 
