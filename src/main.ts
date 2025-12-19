@@ -21,7 +21,7 @@ import {rules as dependRules} from 'eslint-plugin-depend';
 
 const plugin: ESLint.Plugin = {
   meta: {
-    name: '@e18e/eslint-plugin',
+    name: 'e18e',
     namespace: 'e18e'
   },
   configs: {},

@@ -1,0 +1,6 @@
+{
+  "jsPlugins": ["<PLUGIN_PATH>"],
+  "rules": {
+    "e18e/prefer-includes": "error"
+  }
+}
