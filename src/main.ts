@@ -5,6 +5,7 @@ import {moduleReplacements} from './configs/module-replacements.js';
 import {performanceImprovements} from './configs/performance-improvements.js';
 import {preferArrayAt} from './rules/prefer-array-at.js';
 import {preferArrayFill} from './rules/prefer-array-fill.js';
+import {preferArrayFromMap} from './rules/prefer-array-from-map.js';
 import {preferIncludes} from './rules/prefer-includes.js';
 import {preferArrayToReversed} from './rules/prefer-array-to-reversed.js';
 import {preferArrayToSorted} from './rules/prefer-array-to-sorted.js';
@@ -27,6 +28,7 @@ const plugin: ESLint.Plugin = {
   rules: {
     'prefer-array-at': preferArrayAt,
     'prefer-array-fill': preferArrayFill,
+    'prefer-array-from-map': preferArrayFromMap,
     'prefer-includes': preferIncludes,
     'prefer-array-to-reversed': preferArrayToReversed,
     'prefer-array-to-sorted': preferArrayToSorted,
