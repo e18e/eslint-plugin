@@ -63,9 +63,15 @@ export const preferSpreadSyntax: Rule.RuleModule = {
           node.callee.property.name === 'from' &&
           node.arguments.length === 1
         ) {
-          const iterableText = sourceCode.getText(node.arguments[0]!);
-          replacement = `[...${iterableText}]`;
-          messageId = 'preferSpreadArrayFrom';
+          const firstArg = node.arguments[0]!;
+          if (
+            firstArg.type !== 'SpreadElement' &&
+            firstArg.type !== 'ObjectExpression'
+          ) {
+            const iterableText = sourceCode.getText(firstArg);
+            replacement = `[...${iterableText}]`;
+            messageId = 'preferSpreadArrayFrom';
+          }
         }
         // Object.assign({...}, ...)
         else if (
