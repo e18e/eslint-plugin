@@ -23,7 +23,7 @@ const ruleTester = new RuleTester({
   }
 });
 
-ruleTester.run('no-indexof-equality', noIndexOfEquality as never, {
+ruleTester.run('no-indexof-equality', noIndexOfEquality, {
   valid: [
     // checking if an item does NOT exist
     {

@@ -1,4 +1,4 @@
-import type {ESLint} from 'eslint';
+import type {ESLint, Rule} from 'eslint';
 import {recommended} from './configs/recommended.js';
 import {modernization} from './configs/modernization.js';
 import {moduleReplacements} from './configs/module-replacements.js';
@@ -38,7 +38,7 @@ const plugin: ESLint.Plugin = {
     'prefer-object-has-own': preferObjectHasOwn,
     'prefer-spread-syntax': preferSpreadSyntax,
     'prefer-url-canparse': preferUrlCanParse,
-    'no-indexof-equality': noIndexOfEquality,
+    'no-indexof-equality': noIndexOfEquality as never as Rule.RuleModule,
     'prefer-timer-args': preferTimerArgs,
     ...dependRules
   }
