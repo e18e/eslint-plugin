@@ -37,7 +37,11 @@ ruleTester.run('prefer-array-at', preferArrayAt, {
 
     // Edge cases
     'const empty = []',
-    'const literal = [1, 2, 3][0]'
+    'const literal = [1, 2, 3][0]',
+
+    // Assignments
+    'arr[arr.length - 1] = value',
+    'myArray[myArray.length - 1] = 42'
   ],
 
   invalid: [
