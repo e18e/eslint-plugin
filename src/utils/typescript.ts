@@ -1,9 +1,10 @@
-import type {Rule} from 'eslint';
 import type {
   TSNode,
   TSToken,
-  TSESTree
+  TSESTree,
+  ParserServicesWithTypeInformation
 } from '@typescript-eslint/typescript-estree';
+import type {TSESLint} from '@typescript-eslint/utils';
 import type ts from 'typescript';
 
 export interface ParserServices {
@@ -18,13 +19,13 @@ export interface ParserServices {
 }
 
 export function getTypedParserServices(
-  context: Readonly<Rule.RuleContext>
-): ParserServices {
-  if (context.sourceCode.parserServices.program == null) {
+  context: Readonly<TSESLint.RuleContext<string, unknown[]>>
+): ParserServicesWithTypeInformation {
+  if (context.sourceCode.parserServices?.program == null) {
     throw new Error(
       `You have used a rule which requires type information. Please ensure you have typescript-eslint setup alongside this plugin and configured to enable type-aware linting. See https://typescript-eslint.io/getting-started/typed-linting for more information.`
     );
   }
 
-  return context.sourceCode.parserServices as ParserServices;
+  return context.sourceCode.parserServices as ParserServicesWithTypeInformation;
 }

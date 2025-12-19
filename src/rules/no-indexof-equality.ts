@@ -1,15 +1,14 @@
-import type {Rule} from 'eslint';
-import type {BinaryExpression, CallExpression} from 'estree';
-import type {TSESTree} from '@typescript-eslint/typescript-estree';
+import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
 import {getTypedParserServices} from '../utils/typescript.js';
 
-export const noIndexOfEquality: Rule.RuleModule = {
+type MessageIds = 'preferDirectAccess' | 'preferStartsWith';
+
+export const noIndexOfEquality: TSESLint.RuleModule<MessageIds, []> = {
   meta: {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer optimized alternatives to `indexOf()` equality checks',
-      recommended: false
+        'Prefer optimized alternatives to `indexOf()` equality checks'
     },
     fixable: 'code',
     schema: [],
@@ -20,18 +19,19 @@ export const noIndexOfEquality: Rule.RuleModule = {
         'Use `.startsWith()` instead of `indexOf() === 0` for strings'
     }
   },
+  defaultOptions: [],
   create(context) {
     const sourceCode = context.sourceCode;
     const services = getTypedParserServices(context);
     const checker = services.program.getTypeChecker();
 
     return {
-      BinaryExpression(node: BinaryExpression) {
+      BinaryExpression(node: TSESTree.BinaryExpression) {
         if (node.operator !== '===' && node.operator !== '==') {
           return;
         }
 
-        let indexOfCall: CallExpression | undefined;
+        let indexOfCall: TSESTree.CallExpression | undefined;
         let compareIndex: number | undefined;
 
         if (
