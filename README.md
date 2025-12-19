@@ -50,6 +50,19 @@ export default [
 ];
 ```
 
+## Usage with oxlint
+
+If you're using oxlint, you can enable the e18e plugin by adding it to your `.oxlintrc.json` file:
+
+```json
+{
+  "jsPlugins": ["@e18e/eslint-plugin"],
+  "rules": {
+    "e18e/prefer-includes": "error"
+  }
+}
+```
+
 ## Rules
 
 **Legend:**
