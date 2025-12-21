@@ -8,6 +8,7 @@ export const performanceImprovements = (
   },
   rules: {
     'e18e/prefer-array-from-map': 'error',
-    'e18e/prefer-timer-args': 'error'
+    'e18e/prefer-timer-args': 'error',
+    'e18e/prefer-date-now': 'error'
   }
 });
