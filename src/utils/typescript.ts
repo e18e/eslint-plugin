@@ -18,14 +18,25 @@ export interface ParserServices {
   program: ts.Program;
 }
 
+export function tryGetTypedParserServices(
+  context: Readonly<TSESLint.RuleContext<string, unknown[]>>
+): ParserServicesWithTypeInformation | null {
+  if (context.sourceCode.parserServices?.program == null) {
+    return null;
+  }
+
+  return context.sourceCode.parserServices as ParserServicesWithTypeInformation;
+}
+
 export function getTypedParserServices(
   context: Readonly<TSESLint.RuleContext<string, unknown[]>>
 ): ParserServicesWithTypeInformation {
-  if (context.sourceCode.parserServices?.program == null) {
+  const services = tryGetTypedParserServices(context);
+  if (services === null) {
     throw new Error(
       `You have used a rule which requires type information. Please ensure you have typescript-eslint setup alongside this plugin and configured to enable type-aware linting. See https://typescript-eslint.io/getting-started/typed-linting for more information.`
     );
   }
 
-  return context.sourceCode.parserServices as ParserServicesWithTypeInformation;
+  return services;
 }

@@ -112,6 +112,12 @@ Copying these rules into your `rules` object will achieve the same effect as usi
 | [prefer-array-from-map](./src/rules/prefer-array-from-map.ts) | Prefer `Array.from(iterable, mapper)` over `[...iterable].map(mapper)` to avoid intermediate array allocation | ✅ | ✅ | ✖️ |
 | [prefer-timer-args](./src/rules/prefer-timer-args.ts) | Prefer passing function and arguments directly to `setTimeout`/`setInterval` instead of wrapping in an arrow function or using `bind` | ✅ | ✅ | ✖️ |
 | [prefer-date-now](./src/rules/prefer-date-now.ts) | Prefer `Date.now()` over `new Date().getTime()` and `+new Date()` | ✅ | ✅ | ✖️ |
+| [prefer-regex-test](./src/rules/prefer-regex-test.ts) | Prefer `RegExp.test()` over `String.match()` and `RegExp.exec()` when only checking for match existence | ✅ | ✅ | 🔶 |
+
+**Legend for "Requires Types" column:**
+- ✖️ = Does not require types
+- ✅ = Requires types
+- 🔶 = Optionally uses types (works without TypeScript but more powerful with it)
 
 ## License
 
