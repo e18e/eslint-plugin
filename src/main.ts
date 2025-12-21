@@ -17,6 +17,7 @@ import {preferSpreadSyntax} from './rules/prefer-spread-syntax.js';
 import {preferUrlCanParse} from './rules/prefer-url-canparse.js';
 import {noIndexOfEquality} from './rules/no-indexof-equality.js';
 import {preferTimerArgs} from './rules/prefer-timer-args.js';
+import {preferDateNow} from './rules/prefer-date-now.js';
 import {rules as dependRules} from 'eslint-plugin-depend';
 
 const plugin: ESLint.Plugin = {
@@ -40,6 +41,7 @@ const plugin: ESLint.Plugin = {
     'prefer-url-canparse': preferUrlCanParse,
     'no-indexof-equality': noIndexOfEquality as never as Rule.RuleModule,
     'prefer-timer-args': preferTimerArgs,
+    'prefer-date-now': preferDateNow,
     ...dependRules
   }
 };
