@@ -37,15 +37,15 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@types/node": "^25.0.3",
-    "@typescript-eslint/rule-tester": "^8.50.1",
-    "@typescript-eslint/typescript-estree": "^8.50.1",
+    "@typescript-eslint/rule-tester": "^8.51.0",
+    "@typescript-eslint/typescript-estree": "^8.51.0",
     "@vitest/coverage-v8": "^4.0.16",
     "eslint": "^9.39.2",
     "eslint-plugin-eslint-plugin": "^7.2.0",
-    "oxlint": "^1.35.0",
+    "oxlint": "^1.36.0",
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.50.1",
+    "typescript-eslint": "^8.51.0",
     "vitest": "^4.0.14"
   },
   "peerDependencies": {
