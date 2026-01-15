@@ -1,11 +1,18 @@
 import {RuleTester} from 'eslint';
 import {rules} from 'eslint-plugin-depend';
+import json from '@eslint/json';
+import jsoncParser from 'jsonc-eslint-parser';
 
 const ruleTester = new RuleTester({
   languageOptions: {
     ecmaVersion: 2022,
     sourceType: 'module'
   }
+});
+
+const jsonRuleTester = new RuleTester({
+  language: 'json/json',
+  plugins: {json}
 });
 
 // TODO (jg): one day the ban-dependencies rule will live in this repo, so
@@ -22,7 +29,12 @@ ruleTester.run('ban-dependencies', banDependencies, {
 
     // Built-in modules are allowed
     'import path from "path"',
-    'import {readFile} from "fs/promises"'
+    'import {readFile} from "fs/promises"',
+    {
+      code: `{"dependencies": {"typescript": "^5.3.2"}}`,
+      filename: 'package.json',
+      languageOptions: {parser: jsoncParser}
+    }
   ],
   invalid: [
     {
@@ -35,6 +47,28 @@ ruleTester.run('ban-dependencies', banDependencies, {
     },
     {
       code: 'import _ from "lodash"',
+      errors: [{messageId: 'documentedReplacement'}]
+    },
+    {
+      code: `{"dependencies": {"moment": "^1.0.0"}}`,
+      filename: 'package.json',
+      languageOptions: {parser: jsoncParser},
+      errors: [{messageId: 'documentedReplacement'}]
+    }
+  ]
+});
+
+jsonRuleTester.run('ban-dependencies (JSON)', banDependencies, {
+  valid: [
+    {
+      filename: 'package.json',
+      code: `{"dependencies": {"typescript": "^5.3.2"}}`
+    }
+  ],
+  invalid: [
+    {
+      filename: 'package.json',
+      code: `{"dependencies": {"moment": "^1.0.0"}}`,
       errors: [{messageId: 'documentedReplacement'}]
     }
   ]

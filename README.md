@@ -75,6 +75,57 @@ Copying these rules into your `rules` object will achieve the same effect as usi
 > Our type-aware rules depend on TypeScript ESLint's parser, which means they
 > will not work with oxlint at this time.
 
+## Linting `package.json`
+
+Some rules (e.g. `ban-dependencies`) can be used against your `package.json`.
+
+You can achieve this by using `@eslint/json` or `jsonc-eslint-parser`.
+
+For example, with `@eslint/json` and `eslint.config.js`:
+
+```ts
+import e18e from '@e18e/eslint-plugin';
+import json from '@eslint/json';
+import {defineConfig} from 'eslint/config';
+
+export default defineConfig([
+  {
+    files: ['package.json'],
+    language: 'json/json',
+    plugins: {
+      e18e,
+      json
+    },
+    extends: ['e18e/recommended'],
+  }
+]);
+```
+
+Or with `jsonc-eslint-parser` and `eslint.config.js`:
+
+```ts
+import e18e from '@e18e/eslint-plugin';
+import jsonParser from 'jsonc-eslint-parser';
+import {defineConfig} from 'eslint/config';
+
+export default defineConfig([
+  {
+    files: ['package.json'],
+    languageOptions: {
+      parser: jsonParser
+    },
+    plugins: {
+      e18e
+    },
+    extends: ['e18e/recommended'],
+  }
+]);
+```
+
+Read more at the
+[`@eslint/json` docs](https://github.com/eslint/json) and
+[`jsonc-eslint-parser` docs](https://github.com/ota-meshi/jsonc-eslint-parser).
+
 ## Rules
 
 **Legend:**
