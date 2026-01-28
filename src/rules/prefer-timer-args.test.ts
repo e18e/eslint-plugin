@@ -74,7 +74,16 @@ ruleTester.run('prefer-timer-args', preferTimerArgs, {
     // Edge cases
     'setTimeout()',
     'setTimeout(() => fn())',
-    'notSetTimeout(() => doSomething(a), 100)'
+    'notSetTimeout(() => doSomething(a), 100)',
+
+    // References to `this` should not be transformed (would lose binding)
+    'setTimeout(() => this.foo(), 100)',
+    'setTimeout(() => this.handler.process(data), 500)',
+    'setTimeout(() => fn(this.value), 100)',
+    'setTimeout(() => fn(a, this.b, c), 100)',
+    'setInterval(() => this.tick(), 1000)',
+    'window.setTimeout(() => this.render(), 16)',
+    'setTimeout(this.method.bind(null, arg), 100)'
   ],
 
   invalid: [
@@ -126,17 +135,6 @@ ruleTester.run('prefer-timer-args', preferTimerArgs, {
     {
       code: 'setTimeout(() => obj.method(arg), 100)',
       output: 'setTimeout(obj.method, 100, arg)',
-      errors: [
-        {
-          messageId: 'preferArgs'
-        }
-      ]
-    },
-
-    // Nested property access
-    {
-      code: 'setTimeout(() => this.handler.process(data), 500)',
-      output: 'setTimeout(this.handler.process, 500, data)',
       errors: [
         {
           messageId: 'preferArgs'
