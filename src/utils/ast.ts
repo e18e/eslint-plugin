@@ -1,5 +1,69 @@
-import type {CallExpression, Node} from 'estree';
-import type {SourceCode} from 'eslint';
+import type {CallExpression, Node, Expression} from 'estree';
+import type {TSESTree} from '@typescript-eslint/utils';
+import type {Rule, SourceCode} from 'eslint';
+
+type AnyNode = (Node & Rule.NodeParentExtension) | TSESTree.Node;
+
+/**
+ * Checks if a node is in a boolean context (where the result is only used as truthy/falsy).
+ * e.g. if conditions, while loops, ternary tests, logical operators
+ */
+export function isInBooleanContext(node: AnyNode): boolean {
+  const parent = node.parent;
+
+  if (!parent) {
+    return false;
+  }
+
+  // if/while/for/do-while test
+  if (
+    (parent.type === 'IfStatement' && parent.test === node) ||
+    (parent.type === 'WhileStatement' && parent.test === node) ||
+    (parent.type === 'ForStatement' && parent.test === node) ||
+    (parent.type === 'DoWhileStatement' && parent.test === node)
+  ) {
+    return true;
+  }
+
+  // ternaries
+  if (parent.type === 'ConditionalExpression' && parent.test === node) {
+    return true;
+  }
+
+  // check the parent recursively for unary ! and logical operators
+  if (
+    (parent.type === 'UnaryExpression' && parent.operator === '!') ||
+    (parent.type === 'LogicalExpression' &&
+      (parent.operator === '&&' || parent.operator === '||'))
+  ) {
+    return isInBooleanContext(parent);
+  }
+
+  return false;
+}
+
+/**
+ * Checks if a node is undefined, null, or void 0.
+ * Returns the type of nullish value or false if not nullish.
+ */
+export function isNullish(node: Expression): 'undefined' | 'null' | false {
+  if (node.type === 'Identifier' && node.name === 'undefined') {
+    return 'undefined';
+  }
+  if (node.type === 'Literal' && node.value === null) {
+    return 'null';
+  }
+  // void 0
+  if (
+    node.type === 'UnaryExpression' &&
+    node.operator === 'void' &&
+    node.argument.type === 'Literal' &&
+    node.argument.value === 0
+  ) {
+    return 'undefined';
+  }
+  return false;
+}
 
 /**
  * Checks if a CallExpression is a copy operation that creates a shallow copy of an array.

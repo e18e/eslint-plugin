@@ -162,6 +162,7 @@ Read more at the
 |------|-------------|-------------|---------|----------------|
 | [no-indexof-equality](./src/rules/no-indexof-equality.ts) | Prefer `startsWith()` for strings and direct array access over `indexOf()` equality checks | ✖️ | ✅ | ✅ |
 | [prefer-array-from-map](./src/rules/prefer-array-from-map.ts) | Prefer `Array.from(iterable, mapper)` over `[...iterable].map(mapper)` to avoid intermediate array allocation | ✅ | ✅ | ✖️ |
+| [prefer-array-some](./src/rules/prefer-array-some.ts) | Prefer `Array.some()` over `Array.find()` when checking for element existence | ✅ | ✅ | ✖️ |
 | [prefer-timer-args](./src/rules/prefer-timer-args.ts) | Prefer passing function and arguments directly to `setTimeout`/`setInterval` instead of wrapping in an arrow function or using `bind` | ✅ | ✅ | ✖️ |
 | [prefer-date-now](./src/rules/prefer-date-now.ts) | Prefer `Date.now()` over `new Date().getTime()` and `+new Date()` | ✅ | ✅ | ✖️ |
 | [prefer-regex-test](./src/rules/prefer-regex-test.ts) | Prefer `RegExp.test()` over `String.match()` and `RegExp.exec()` when only checking for match existence | ✅ | ✅ | 🔶 |

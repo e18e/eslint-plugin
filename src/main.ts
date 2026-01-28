@@ -19,6 +19,7 @@ import {noIndexOfEquality} from './rules/no-indexof-equality.js';
 import {preferTimerArgs} from './rules/prefer-timer-args.js';
 import {preferDateNow} from './rules/prefer-date-now.js';
 import {preferRegexTest} from './rules/prefer-regex-test.js';
+import {preferArraySome} from './rules/prefer-array-some.js';
 import {rules as dependRules} from 'eslint-plugin-depend';
 
 const plugin: ESLint.Plugin = {
@@ -44,6 +45,7 @@ const plugin: ESLint.Plugin = {
     'prefer-timer-args': preferTimerArgs,
     'prefer-date-now': preferDateNow,
     'prefer-regex-test': preferRegexTest as never as Rule.RuleModule,
+    'prefer-array-some': preferArraySome,
     ...dependRules
   }
 };

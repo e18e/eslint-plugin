@@ -1,5 +1,6 @@
 import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
 import {tryGetTypedParserServices} from '../utils/typescript.js';
+import {isInBooleanContext} from '../utils/ast.js';
 
 type MessageIds = 'preferTest';
 
@@ -111,43 +112,6 @@ function resolvesToRegExp(
         return true;
       }
     }
-  }
-
-  return false;
-}
-
-/**
- * Checks if a node is in a test/condition
- */
-function isInBooleanContext(node: TSESTree.Node): boolean {
-  const parent = node.parent;
-
-  if (!parent) {
-    return false;
-  }
-
-  // if/while/for/do-while test
-  if (
-    (parent.type === 'IfStatement' && parent.test === node) ||
-    (parent.type === 'WhileStatement' && parent.test === node) ||
-    (parent.type === 'ForStatement' && parent.test === node) ||
-    (parent.type === 'DoWhileStatement' && parent.test === node)
-  ) {
-    return true;
-  }
-
-  // ternaries
-  if (parent.type === 'ConditionalExpression' && parent.test === node) {
-    return true;
-  }
-
-  // check the parent
-  if (
-    (parent.type === 'UnaryExpression' && parent.operator === '!') ||
-    (parent.type === 'LogicalExpression' &&
-      (parent.operator === '&&' || parent.operator === '||'))
-  ) {
-    return isInBooleanContext(parent);
   }
 
   return false;
