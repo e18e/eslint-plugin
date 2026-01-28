@@ -42,10 +42,15 @@ export const preferSpreadSyntax: Rule.RuleModule = {
         let replacement: string | undefined;
 
         // array.concat()
+        // excluding Buffer.concat()
         if (
           node.callee.property.type === 'Identifier' &&
           node.callee.property.name === 'concat' &&
-          node.arguments.length > 0
+          node.arguments.length > 0 &&
+          !(
+            node.callee.object.type === 'Identifier' &&
+            node.callee.object.name === 'Buffer'
+          )
         ) {
           const arrayText = sourceCode.getText(node.callee.object);
           const argTexts = node.arguments.map((arg) => sourceCode.getText(arg));

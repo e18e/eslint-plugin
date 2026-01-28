@@ -17,6 +17,10 @@ ruleTester.run('prefer-spread-syntax', preferSpreadSyntax, {
     // concat with no arguments
     'arr.concat();',
 
+    // Buffer.concat is not replaceable with spread
+    'Buffer.concat([buf1, buf2]);',
+    'Buffer.concat(buffers);',
+
     // Array.from with mapper function (should keep as-is)
     'Array.from(iterable, x => x * 2);',
     'Array.from(arr, mapper);',
