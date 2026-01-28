@@ -1,12 +1,13 @@
-import type {Rule} from 'eslint';
-import type {MemberExpression} from 'estree';
+import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
+import {isArrayType, isStringType} from '../utils/typescript.js';
 
-export const preferArrayAt: Rule.RuleModule = {
+type MessageIds = 'preferAt';
+
+export const preferArrayAt: TSESLint.RuleModule<MessageIds, []> = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Prefer Array.prototype.at() over length-based indexing',
-      recommended: true
+      description: 'Prefer Array.prototype.at() over length-based indexing'
     },
     fixable: 'code',
     schema: [],
@@ -14,11 +15,12 @@ export const preferArrayAt: Rule.RuleModule = {
       preferAt: 'Use .at(-1) instead of [{{array}}.length - 1]'
     }
   },
+  defaultOptions: [],
   create(context) {
     const sourceCode = context.sourceCode;
 
     return {
-      MemberExpression(node: MemberExpression & Rule.NodeParentExtension) {
+      MemberExpression(node: TSESTree.MemberExpression) {
         if (!node.computed || !node.property) {
           return;
         }
@@ -65,6 +67,14 @@ export const preferArrayAt: Rule.RuleModule = {
           parent &&
           parent.type === 'AssignmentExpression' &&
           parent.left === node
+        ) {
+          return;
+        }
+
+        // Check if the object supports .at() (array or string, when types are available)
+        if (
+          !isArrayType(node.object, context) &&
+          !isStringType(node.object, context)
         ) {
           return;
         }

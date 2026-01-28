@@ -28,7 +28,7 @@ const plugin: ESLint.Plugin = {
   },
   configs: {},
   rules: {
-    'prefer-array-at': preferArrayAt,
+    'prefer-array-at': preferArrayAt as never as Rule.RuleModule,
     'prefer-array-fill': preferArrayFill,
     'prefer-array-from-map': preferArrayFromMap,
     'prefer-includes': preferIncludes,
