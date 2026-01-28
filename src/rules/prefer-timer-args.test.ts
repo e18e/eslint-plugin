@@ -76,14 +76,17 @@ ruleTester.run('prefer-timer-args', preferTimerArgs, {
     'setTimeout(() => fn())',
     'notSetTimeout(() => doSomething(a), 100)',
 
+    // Method calls should not be transformed (could lose `this` binding)
+    'setTimeout(() => obj.method(arg), 100)',
+    'setTimeout(() => arr.filter(fn).map(transform), 100)',
+
     // References to `this` should not be transformed (would lose binding)
     'setTimeout(() => this.foo(), 100)',
     'setTimeout(() => this.handler.process(data), 500)',
     'setTimeout(() => fn(this.value), 100)',
     'setTimeout(() => fn(a, this.b, c), 100)',
     'setInterval(() => this.tick(), 1000)',
-    'window.setTimeout(() => this.render(), 16)',
-    'setTimeout(this.method.bind(null, arg), 100)'
+    'window.setTimeout(() => this.render(), 16)'
   ],
 
   invalid: [
@@ -124,17 +127,6 @@ ruleTester.run('prefer-timer-args', preferTimerArgs, {
     {
       code: 'setTimeout(() => process(a, b, c), 0)',
       output: 'setTimeout(process, 0, a, b, c)',
-      errors: [
-        {
-          messageId: 'preferArgs'
-        }
-      ]
-    },
-
-    // Method calls
-    {
-      code: 'setTimeout(() => obj.method(arg), 100)',
-      output: 'setTimeout(obj.method, 100, arg)',
       errors: [
         {
           messageId: 'preferArgs'
@@ -191,17 +183,6 @@ setTimeout(fn2, 200, b, c);`,
       ]
     },
 
-    // Chained method calls
-    {
-      code: 'setTimeout(() => arr.filter(fn).map(transform), 100)',
-      output: 'setTimeout(arr.filter(fn).map, 100, transform)',
-      errors: [
-        {
-          messageId: 'preferArgs'
-        }
-      ]
-    },
-
     // bind() with null context
     {
       code: 'setTimeout(fn.bind(null, a, b), 100)',
@@ -250,6 +231,17 @@ setTimeout(fn2, 200, b, c);`,
     {
       code: 'setTimeout(obj.method.bind(null, arg), 100)',
       output: 'setTimeout(obj.method, 100, arg)',
+      errors: [
+        {
+          messageId: 'preferArgs'
+        }
+      ]
+    },
+
+    // bind() on this.method with null context
+    {
+      code: 'setTimeout(this.method.bind(null, arg), 100)',
+      output: 'setTimeout(this.method, 100, arg)',
       errors: [
         {
           messageId: 'preferArgs'

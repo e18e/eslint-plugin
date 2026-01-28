@@ -1,10 +1,5 @@
 import type {Rule} from 'eslint';
-import type {
-  CallExpression,
-  ArrowFunctionExpression,
-  Expression,
-  SpreadElement
-} from 'estree';
+import type {CallExpression, Expression, SpreadElement} from 'estree';
 
 function isNullOrUndefined(node: Expression): boolean {
   if (node.type === 'Literal' && node.value === null) {
@@ -122,26 +117,10 @@ export const preferTimerArgs: Rule.RuleModule = {
   },
   create(context) {
     const sourceCode = context.sourceCode;
-    let sawThis = false;
 
     return {
-      ThisExpression() {
-        sawThis = true;
-      },
-
       CallExpression(node: CallExpression) {
-        if (isTimerCall(node)) {
-          sawThis = false;
-        }
-      },
-
-      'CallExpression:exit'(node: CallExpression) {
         if (!isTimerCall(node)) {
-          return;
-        }
-
-        // Skip if the callback references `this` - transformation would lose binding
-        if (sawThis) {
           return;
         }
 
@@ -161,25 +140,27 @@ export const preferTimerArgs: Rule.RuleModule = {
 
         // simple arrow functions, e.g. () => fn(args)
         if (firstArg.type === 'ArrowFunctionExpression') {
-          const arrowFn = firstArg as ArrowFunctionExpression;
-
           // skip if it is a block body
-          if (arrowFn.body.type === 'BlockStatement') {
+          if (firstArg.body.type === 'BlockStatement') {
             return;
           }
 
           // skip if it has parameters
-          if (arrowFn.params.length > 0) {
+          if (firstArg.params.length > 0) {
             return;
           }
 
-          if (arrowFn.body.type !== 'CallExpression') {
+          if (firstArg.body.type !== 'CallExpression') {
             return;
           }
 
-          const callExpression = arrowFn.body;
+          const callExpression = firstArg.body;
           const callee = callExpression.callee;
           const callArgs = callExpression.arguments;
+
+          if (callee.type === 'MemberExpression') {
+            return;
+          }
 
           if (!callArgs.every(isSafeArgument)) {
             return;
