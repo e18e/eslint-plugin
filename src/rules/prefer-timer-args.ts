@@ -13,6 +13,27 @@ function isNullOrUndefined(node: Expression): boolean {
   return node.type === 'Identifier' && node.name === 'undefined';
 }
 
+function isTimerCall(node: CallExpression): boolean {
+  if (
+    node.callee.type === 'Identifier' &&
+    (node.callee.name === 'setTimeout' || node.callee.name === 'setInterval')
+  ) {
+    return true;
+  }
+  if (
+    node.callee.type === 'MemberExpression' &&
+    node.callee.object.type === 'Identifier' &&
+    (node.callee.object.name === 'window' ||
+      node.callee.object.name === 'globalThis') &&
+    node.callee.property.type === 'Identifier' &&
+    (node.callee.property.name === 'setTimeout' ||
+      node.callee.property.name === 'setInterval')
+  ) {
+    return true;
+  }
+  return false;
+}
+
 function isSafeArgument(arg: Expression | SpreadElement): boolean {
   if (arg.type === 'SpreadElement') {
     return arg.argument.type === 'Identifier';
@@ -101,23 +122,26 @@ export const preferTimerArgs: Rule.RuleModule = {
   },
   create(context) {
     const sourceCode = context.sourceCode;
+    let sawThis = false;
 
     return {
-      CallExpression(node: CallExpression) {
-        // Check if this is setTimeout/setInterval (with optional window/globalThis prefix)
-        const isTimerFunction =
-          (node.callee.type === 'Identifier' &&
-            (node.callee.name === 'setTimeout' ||
-              node.callee.name === 'setInterval')) ||
-          (node.callee.type === 'MemberExpression' &&
-            node.callee.object.type === 'Identifier' &&
-            (node.callee.object.name === 'window' ||
-              node.callee.object.name === 'globalThis') &&
-            node.callee.property.type === 'Identifier' &&
-            (node.callee.property.name === 'setTimeout' ||
-              node.callee.property.name === 'setInterval'));
+      ThisExpression() {
+        sawThis = true;
+      },
 
-        if (!isTimerFunction) {
+      CallExpression(node: CallExpression) {
+        if (isTimerCall(node)) {
+          sawThis = false;
+        }
+      },
+
+      'CallExpression:exit'(node: CallExpression) {
+        if (!isTimerCall(node)) {
+          return;
+        }
+
+        // Skip if the callback references `this` - transformation would lose binding
+        if (sawThis) {
           return;
         }
 
