@@ -51,7 +51,16 @@
     "vitest": "^4.0.14"
   },
   "peerDependencies": {
-    "eslint": "^9.0.0"
+    "eslint": "^9.0.0",
+    "oxlint": "^1.41.0"
+  },
+  "peerDependenciesMeta": {
+    "eslint": {
+      "optional": true
+    },
+    "oxlint": {
+      "optional": true
+    }
   },
   "dependencies": {
     "eslint-plugin-depend": "^1.4.0"
