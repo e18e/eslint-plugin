@@ -1,14 +1,15 @@
-import type {Rule} from 'eslint';
-import type {CallExpression} from 'estree';
+import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
 import {getArrayFromCopyPattern, formatArguments} from '../utils/ast.js';
+import {isArrayType} from '../utils/typescript.js';
 
-export const preferArrayToSorted: Rule.RuleModule = {
+type MessageIds = 'preferToSorted';
+
+export const preferArrayToSorted: TSESLint.RuleModule<MessageIds, []> = {
   meta: {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer Array.prototype.toSorted() over copying and sorting arrays',
-      recommended: true
+        'Prefer Array.prototype.toSorted() over copying and sorting arrays'
     },
     fixable: 'code',
     schema: [],
@@ -16,11 +17,12 @@ export const preferArrayToSorted: Rule.RuleModule = {
       preferToSorted: 'Use {{array}}.toSorted() instead of copying and sorting'
     }
   },
+  defaultOptions: [],
   create(context) {
     const sourceCode = context.sourceCode;
 
     return {
-      CallExpression(node: CallExpression) {
+      CallExpression(node: TSESTree.CallExpression) {
         if (
           node.callee.type !== 'MemberExpression' ||
           node.callee.property.type !== 'Identifier' ||
@@ -33,6 +35,10 @@ export const preferArrayToSorted: Rule.RuleModule = {
         const arrayNode = getArrayFromCopyPattern(sortCallee);
 
         if (arrayNode) {
+          if (!isArrayType(arrayNode, context)) {
+            return;
+          }
+
           const arrayText = sourceCode.getText(arrayNode);
           const argsText = formatArguments(node.arguments, sourceCode);
 

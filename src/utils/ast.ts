@@ -1,15 +1,17 @@
 import type {CallExpression, Node, Expression} from 'estree';
-import type {TSESTree} from '@typescript-eslint/utils';
+import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
 import type {Rule, SourceCode} from 'eslint';
 
-type AnyNode = (Node & Rule.NodeParentExtension) | TSESTree.Node;
+export type AnyNode = Node | TSESTree.Node;
+
+type NodeWithParent = (Node & Rule.NodeParentExtension) | TSESTree.Node;
 
 /**
  * Checks if a node is in a boolean context (where the result is only used as truthy/falsy).
  * e.g. if conditions, while loops, ternary tests, logical operators
  */
 export function isInBooleanContext(node: AnyNode): boolean {
-  const parent = node.parent;
+  const parent = (node as NodeWithParent).parent;
 
   if (!parent) {
     return false;
@@ -101,10 +103,14 @@ export function isCopyCall(node: CallExpression): boolean {
 /**
  * Extracts the array node from array copy patterns.
  */
-export function getArrayFromCopyPattern(node: Node): Node | null {
+export function getArrayFromCopyPattern(
+  node: TSESTree.Node
+): TSESTree.Node | null;
+export function getArrayFromCopyPattern(node: Node): Node | null;
+export function getArrayFromCopyPattern(node: AnyNode): AnyNode | null {
   if (
     node.type === 'CallExpression' &&
-    isCopyCall(node) &&
+    isCopyCall(node as CallExpression) &&
     node.callee.type === 'MemberExpression'
   ) {
     return node.callee.object;
@@ -125,11 +131,21 @@ export function getArrayFromCopyPattern(node: Node): Node | null {
  * Formats arguments from a CallExpression as a comma-separated string.
  */
 export function formatArguments(
+  args: TSESTree.CallExpression['arguments'],
+  sourceCode: Readonly<TSESLint.SourceCode>
+): string;
+export function formatArguments(
   args: CallExpression['arguments'],
   sourceCode: SourceCode
+): string;
+export function formatArguments(
+  args: CallExpression['arguments'] | TSESTree.CallExpression['arguments'],
+  sourceCode: SourceCode | Readonly<TSESLint.SourceCode>
 ): string {
   if (args.length === 0) {
     return '';
   }
-  return args.map((arg) => sourceCode.getText(arg)).join(', ');
+  return args
+    .map((arg) => (sourceCode as SourceCode).getText(arg as Node))
+    .join(', ');
 }
