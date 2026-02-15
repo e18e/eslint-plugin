@@ -167,6 +167,14 @@ Read more at the
 | [prefer-date-now](./src/rules/prefer-date-now.ts) | Prefer `Date.now()` over `new Date().getTime()` and `+new Date()` | ✅ | ✅ | ✖️ |
 | [prefer-regex-test](./src/rules/prefer-regex-test.ts) | Prefer `RegExp.test()` over `String.match()` and `RegExp.exec()` when only checking for match existence | ✅ | ✅ | 🔶 |
 
+## Sponsors
+
+<p align="center">
+  <a href="https://github.com/sponsors/e18e">
+    <img src="https://e18e.dev/sponsors.svg" alt="e18e community sponsors" />
+  </a>
+</p>
+
 ## License
 
 MIT
