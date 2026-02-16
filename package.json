@@ -51,7 +51,7 @@
     "vitest": "^4.0.14"
   },
   "peerDependencies": {
-    "eslint": "^9.0.0",
+    "eslint": "^9.0.0 || ^10.0.0",
     "oxlint": "^1.41.0"
   },
   "peerDependenciesMeta": {
