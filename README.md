@@ -166,6 +166,7 @@ Read more at the
 | [prefer-timer-args](./src/rules/prefer-timer-args.ts) | Prefer passing function and arguments directly to `setTimeout`/`setInterval` instead of wrapping in an arrow function or using `bind` | ✅ | ✅ | ✖️ |
 | [prefer-date-now](./src/rules/prefer-date-now.ts) | Prefer `Date.now()` over `new Date().getTime()` and `+new Date()` | ✅ | ✅ | ✖️ |
 | [prefer-regex-test](./src/rules/prefer-regex-test.ts) | Prefer `RegExp.test()` over `String.match()` and `RegExp.exec()` when only checking for match existence | ✅ | ✅ | 🔶 |
+| [prefer-static-regex](./src/rules/prefer-static-regex.ts) | Prefer defining regular expressions at module scope to avoid re-compilation on every function call | ✅ | ✖️ | ✖️ |
 
 ## Sponsors
 
