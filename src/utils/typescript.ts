@@ -91,6 +91,32 @@ export function isArrayType(
   return false;
 }
 
+const setTypePattern = /^(Readonly)?Set</;
+
+/**
+ * Checks if a node's type is a Set
+ * Returns true if types are unavailable (to avoid false negatives)
+ */
+export function isSetType(
+  node: TSESTree.Node,
+  context: Readonly<TSESLint.RuleContext<string, unknown[]>>
+): boolean {
+  const services = tryGetTypedParserServices(context);
+  if (!services) {
+    return true;
+  }
+
+  const type = services.getTypeAtLocation(node);
+  if (!type) {
+    return true;
+  }
+
+  const checker = services.program.getTypeChecker();
+  const typeString = checker.typeToString(type);
+
+  return setTypePattern.test(typeString);
+}
+
 /**
  * Checks if a node's type is a string
  * Returns false if types are unavailable

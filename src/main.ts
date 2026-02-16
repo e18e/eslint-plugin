@@ -21,6 +21,7 @@ import {preferDateNow} from './rules/prefer-date-now.js';
 import {preferRegexTest} from './rules/prefer-regex-test.js';
 import {preferArraySome} from './rules/prefer-array-some.js';
 import {preferStaticRegex} from './rules/prefer-static-regex.js';
+import {preferInlineEquality} from './rules/prefer-inline-equality.js';
 import {rules as dependRules} from 'eslint-plugin-depend';
 
 const plugin: ESLint.Plugin = {
@@ -48,6 +49,7 @@ const plugin: ESLint.Plugin = {
     'prefer-regex-test': preferRegexTest as never as Rule.RuleModule,
     'prefer-array-some': preferArraySome,
     'prefer-static-regex': preferStaticRegex,
+    'prefer-inline-equality': preferInlineEquality as never as Rule.RuleModule,
     ...dependRules
   }
 };
