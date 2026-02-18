@@ -24,12 +24,11 @@ import {preferStaticRegex} from './rules/prefer-static-regex.js';
 import {preferInlineEquality} from './rules/prefer-inline-equality.js';
 import {rules as dependRules} from 'eslint-plugin-depend';
 
-const plugin: ESLint.Plugin = {
+const plugin = {
   meta: {
     name: 'e18e',
     namespace: 'e18e'
   },
-  configs: {},
   rules: {
     'prefer-array-at': preferArrayAt as never as Rule.RuleModule,
     'prefer-array-fill': preferArrayFill,
@@ -52,11 +51,14 @@ const plugin: ESLint.Plugin = {
     'prefer-inline-equality': preferInlineEquality as never as Rule.RuleModule,
     ...dependRules
   }
-};
+} satisfies ESLint.Plugin;
 
-plugin.configs!.recommended = recommended(plugin);
-plugin.configs!.modernization = modernization(plugin);
-plugin.configs!.moduleReplacements = moduleReplacements(plugin);
-plugin.configs!.performanceImprovements = performanceImprovements(plugin);
-
-export default plugin;
+export default {
+  ...plugin,
+  configs: {
+    recommended: recommended(plugin),
+    modernization: modernization(plugin),
+    moduleReplacements: moduleReplacements(plugin),
+    performanceImprovements: performanceImprovements(plugin)
+  }
+} satisfies ESLint.Plugin;
