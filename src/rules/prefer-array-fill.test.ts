@@ -35,7 +35,17 @@ ruleTester.run('prefer-array-fill', preferArrayFill, {
 
     // Different patterns
     'const arr = new Array(5)',
-    'const arr = Array(5)'
+    'const arr = Array(5)',
+
+    // Non-constant callback - function call that could return different values each time
+    'const arr = Array.from({length: 5}, () => faker.lorem.sentences(3))',
+    'const arr = Array.from({length: 5}, () => Math.random())',
+    'const arr = Array.from({length: 3}, function() { return faker.lorem.sentences(3) })',
+    'const arr = [...Array(5)].map(() => faker.lorem.sentences(3))',
+    'const arr = [...Array(5)].map(() => Math.random())',
+    'const arr = [...Array(3)].map(function() { return Math.random() })',
+    'const arr = Array.from({length: 5}, () => new Date())',
+    'const arr = [...Array(5)].map(() => new Foo())'
   ],
 
   invalid: [
