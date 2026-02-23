@@ -1,7 +1,7 @@
 import {RuleTester} from 'eslint';
 import {rules} from 'eslint-plugin-depend';
 import json from '@eslint/json';
-import jsoncParser from 'jsonc-eslint-parser';
+import * as jsoncParser from 'jsonc-eslint-parser';
 
 const ruleTester = new RuleTester({
   languageOptions: {
