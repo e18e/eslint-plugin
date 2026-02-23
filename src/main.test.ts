@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vitest';
 import {ESLint, type Linter} from 'eslint';
-import jsoncParser from 'jsonc-eslint-parser';
+import * as jsoncParser from 'jsonc-eslint-parser';
 import json from '@eslint/json';
 import plugin from './main.js';
 
