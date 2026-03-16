@@ -18,7 +18,8 @@ function isConstantExpression(node: Expression): boolean {
       return false;
     case 'MemberExpression':
       return (
-        isConstantExpression(node.object as Expression) &&
+        node.object.type !== 'Super' &&
+        isConstantExpression(node.object) &&
         (!node.computed || isConstantExpression(node.property as Expression))
       );
     case 'UnaryExpression':
@@ -26,7 +27,8 @@ function isConstantExpression(node: Expression): boolean {
     case 'BinaryExpression':
     case 'LogicalExpression':
       return (
-        isConstantExpression(node.left as Expression) &&
+        node.left.type !== 'PrivateIdentifier' &&
+        isConstantExpression(node.left) &&
         isConstantExpression(node.right)
       );
     case 'ConditionalExpression':
@@ -36,9 +38,7 @@ function isConstantExpression(node: Expression): boolean {
         isConstantExpression(node.alternate)
       );
     case 'TemplateLiteral':
-      return node.expressions.every((expr) =>
-        isConstantExpression(expr as Expression)
-      );
+      return node.expressions.every((expr) => isConstantExpression(expr));
     default:
       return false;
   }
