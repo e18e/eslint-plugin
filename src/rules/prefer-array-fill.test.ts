@@ -35,7 +35,26 @@ ruleTester.run('prefer-array-fill', preferArrayFill, {
 
     // Different patterns
     'const arr = new Array(5)',
-    'const arr = Array(5)'
+    'const arr = Array(5)',
+
+    // Non-constant callback - function call that could return different values each time
+    'const arr = Array.from({length: 5}, () => faker.lorem.sentences(3))',
+    'const arr = Array.from({length: 5}, () => Math.random())',
+    'const arr = Array.from({length: 3}, function() { return faker.lorem.sentences(3) })',
+    'const arr = Array.from({length: 5}, () => new Date())',
+    'const arr = Array.from({length: 5}, () => [])',
+    'const arr = [...Array(5)].map(() => faker.lorem.sentences(3))',
+    'const arr = [...Array(5)].map(() => Math.random())',
+    'const arr = [...Array(3)].map(function() { return Math.random() })',
+    'const arr = [...Array(5)].map(() => new Foo())',
+
+    // Non-constant callback - object/array literal creates new value each time
+    'const arr = Array.from({length: 5}, () => ({}))',
+    'const arr = [...Array(5)].map(() => [])',
+
+    // Non-constant callback - logical/conditional containing a call
+    'const arr = Array.from({length: 5}, () => a || getVal())',
+    'const arr = [...Array(5)].map(() => a ? getVal() : b)'
   ],
 
   invalid: [
@@ -75,18 +94,6 @@ ruleTester.run('prefer-array-fill', preferArrayFill, {
       ]
     },
 
-    // Array.from with object value
-    {
-      code: 'const arr = Array.from({length: 5}, () => ({}))',
-      output: 'const arr = Array.from({length: 5}).fill({})',
-      errors: [
-        {
-          messageId: 'preferFillArrayFrom',
-          data: {length: '5', value: '{}'}
-        }
-      ]
-    },
-
     // Array.from with regular function expression
     {
       code: 'const arr = Array.from({length: 5}, function() { return 0 })',
@@ -119,18 +126,6 @@ ruleTester.run('prefer-array-fill', preferArrayFill, {
         {
           messageId: 'preferFillSpreadMap',
           data: {length: '3', value: '"test"'}
-        }
-      ]
-    },
-
-    // Spread Array with map and expression
-    {
-      code: 'const arr = [...Array(10)].map(() => [])',
-      output: 'const arr = Array(10).fill([])',
-      errors: [
-        {
-          messageId: 'preferFillSpreadMap',
-          data: {length: '10', value: '[]'}
         }
       ]
     },
@@ -209,6 +204,30 @@ const arr2 = Array(3).fill("test");`,
         {
           messageId: 'preferFillSpreadMap',
           data: {length: '5', value: '1 + 2'}
+        }
+      ]
+    },
+
+    // Logical expression with all-constant operands
+    {
+      code: 'const arr = Array.from({length: 5}, () => a ?? b)',
+      output: 'const arr = Array.from({length: 5}).fill(a ?? b)',
+      errors: [
+        {
+          messageId: 'preferFillArrayFrom',
+          data: {length: '5', value: 'a ?? b'}
+        }
+      ]
+    },
+
+    // Conditional expression with all-constant branches
+    {
+      code: 'const arr = [...Array(5)].map(() => a ? b : c)',
+      output: 'const arr = Array(5).fill(a ? b : c)',
+      errors: [
+        {
+          messageId: 'preferFillSpreadMap',
+          data: {length: '5', value: 'a ? b : c'}
         }
       ]
     }

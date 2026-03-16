@@ -2,32 +2,81 @@ import type {Rule, SourceCode} from 'eslint';
 import type {
   CallExpression,
   ArrowFunctionExpression,
-  FunctionExpression
+  FunctionExpression,
+  Expression
 } from 'estree';
+
+function isConstantExpression(node: Expression): boolean {
+  switch (node.type) {
+    case 'Literal':
+    case 'Identifier':
+      return true;
+    case 'CallExpression':
+    case 'NewExpression':
+    case 'ObjectExpression':
+    case 'ArrayExpression':
+      return false;
+    case 'MemberExpression':
+      return (
+        node.object.type !== 'Super' &&
+        isConstantExpression(node.object) &&
+        (!node.computed || isConstantExpression(node.property as Expression))
+      );
+    case 'UnaryExpression':
+      return isConstantExpression(node.argument);
+    case 'BinaryExpression':
+    case 'LogicalExpression':
+      return (
+        node.left.type !== 'PrivateIdentifier' &&
+        isConstantExpression(node.left) &&
+        isConstantExpression(node.right)
+      );
+    case 'ConditionalExpression':
+      return (
+        isConstantExpression(node.test) &&
+        isConstantExpression(node.consequent) &&
+        isConstantExpression(node.alternate)
+      );
+    case 'TemplateLiteral':
+      return node.expressions.every((expr) => isConstantExpression(expr));
+    default:
+      return false;
+  }
+}
+
+function getCallbackValueNode(
+  func: ArrowFunctionExpression | FunctionExpression
+): Expression | undefined {
+  if (func.body.type === 'BlockStatement') {
+    if (func.body.body.length !== 1) return undefined;
+    const returnStmt = func.body.body[0];
+    if (returnStmt?.type === 'ReturnStatement' && returnStmt.argument) {
+      return returnStmt.argument;
+    }
+    return undefined;
+  }
+  return func.body;
+}
 
 function isConstantCallback(
   func: ArrowFunctionExpression | FunctionExpression
 ): boolean {
-  return (
-    func.params.length === 0 &&
-    (func.body.type !== 'BlockStatement' ||
-      (func.body.body.length === 1 &&
-        func.body.body[0]?.type === 'ReturnStatement'))
-  );
+  if (func.params.length !== 0) {
+    return false;
+  }
+  const valueNode = getCallbackValueNode(func);
+  if (!valueNode) {
+    return false;
+  }
+  return isConstantExpression(valueNode);
 }
 
 function getCallbackValueText(
   func: ArrowFunctionExpression | FunctionExpression,
   sourceCode: SourceCode
 ): string | undefined {
-  if (func.body.type === 'BlockStatement') {
-    const returnStmt = func.body.body[0];
-    if (returnStmt?.type === 'ReturnStatement' && returnStmt.argument) {
-      return sourceCode.getText(returnStmt.argument);
-    }
-    return undefined;
-  }
-  return sourceCode.getText(func.body);
+  const valueNode = getCallbackValueNode(func);
+  return valueNode ? sourceCode.getText(valueNode) : undefined;
 }
 
 export const preferArrayFill: Rule.RuleModule = {
