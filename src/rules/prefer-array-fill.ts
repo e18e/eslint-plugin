@@ -8,12 +8,14 @@ import type {
 
 function isConstantExpression(node: Expression): boolean {
   switch (node.type) {
-    case 'CallExpression':
-    case 'NewExpression':
-      return false;
     case 'Literal':
     case 'Identifier':
       return true;
+    case 'CallExpression':
+    case 'NewExpression':
+    case 'ObjectExpression':
+    case 'ArrayExpression':
+      return false;
     case 'MemberExpression':
       return (
         isConstantExpression(node.object as Expression) &&
@@ -22,21 +24,16 @@ function isConstantExpression(node: Expression): boolean {
     case 'UnaryExpression':
       return isConstantExpression(node.argument);
     case 'BinaryExpression':
+    case 'LogicalExpression':
       return (
         isConstantExpression(node.left as Expression) &&
         isConstantExpression(node.right)
       );
-    case 'ArrayExpression':
-      return node.elements.every(
-        (el) =>
-          el === null ||
-          (el.type !== 'SpreadElement' && isConstantExpression(el))
-      );
-    case 'ObjectExpression':
-      return node.properties.every(
-        (prop) =>
-          prop.type === 'Property' &&
-          isConstantExpression(prop.value as Expression)
+    case 'ConditionalExpression':
+      return (
+        isConstantExpression(node.test) &&
+        isConstantExpression(node.consequent) &&
+        isConstantExpression(node.alternate)
       );
     case 'TemplateLiteral':
       return node.expressions.every((expr) =>
@@ -58,7 +55,7 @@ function getCallbackValueNode(
     }
     return undefined;
   }
-  return func.body as Expression;
+  return func.body;
 }
 
 function isConstantCallback(
