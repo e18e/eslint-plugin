@@ -35,7 +35,8 @@ const plugin: ESLint.Plugin = {
     'prefer-array-fill': preferArrayFill,
     'prefer-array-from-map': preferArrayFromMap,
     'prefer-includes': preferIncludes,
-    'prefer-array-to-reversed': preferArrayToReversed,
+    'prefer-array-to-reversed':
+      preferArrayToReversed as never as Rule.RuleModule,
     'prefer-array-to-sorted': preferArrayToSorted as never as Rule.RuleModule,
     'prefer-array-to-spliced': preferArrayToSpliced,
     'prefer-exponentiation-operator': preferExponentiationOperator,
