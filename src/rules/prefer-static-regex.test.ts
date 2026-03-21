@@ -25,7 +25,15 @@ ruleTester.run('prefer-static-regex', preferStaticRegex, {
     'new RegExp("foo").test("bar");',
 
     // new RegExp with no args
-    'function f() { return new RegExp(); }'
+    'function f() { return new RegExp(); }',
+
+    // Stateful flags (g, y) - should not be hoisted
+    'function f(s) { return /foo/g.test(s); }',
+    'function f(s) { return /foo/y.test(s); }',
+    'function f(s) { return /foo/gi.test(s); }',
+    'function f(s) { return s.replace(/foo/g, "bar"); }',
+    'function f(s) { return new RegExp("foo", "g").test(s); }',
+    'function f(s) { return new RegExp("foo", "gy").test(s); }'
   ],
   invalid: [
     // function declaration
@@ -80,16 +88,16 @@ ruleTester.run('prefer-static-regex', preferStaticRegex, {
         }
       ]
     },
-    // with flags
+    // with non-stateful flags
     {
-      code: 'function f(s) { return /foo/gi.test(s); }',
+      code: 'function f(s) { return /foo/i.test(s); }',
       errors: [
         {
           messageId: 'preferStatic',
           line: 1,
           column: 24,
           endLine: 1,
-          endColumn: 31
+          endColumn: 30
         }
       ]
     },
@@ -106,16 +114,16 @@ ruleTester.run('prefer-static-regex', preferStaticRegex, {
         }
       ]
     },
-    // with string literal and flags in function
+    // with non-stateful string literal flags in function
     {
-      code: 'function f(s) { return new RegExp("foo", "gi").test(s); }',
+      code: 'function f(s) { return new RegExp("foo", "i").test(s); }',
       errors: [
         {
           messageId: 'preferStatic',
           line: 1,
           column: 24,
           endLine: 1,
-          endColumn: 47
+          endColumn: 46
         }
       ]
     },
@@ -165,16 +173,16 @@ ruleTester.run('prefer-static-regex', preferStaticRegex, {
         }
       ]
     },
-    // Regex in string replace
+    // Regex in string replace (no stateful flags)
     {
-      code: 'function f(s) { return s.replace(/foo/g, "bar"); }',
+      code: 'function f(s) { return s.replace(/foo/, "bar"); }',
       errors: [
         {
           messageId: 'preferStatic',
           line: 1,
           column: 34,
           endLine: 1,
-          endColumn: 40
+          endColumn: 39
         }
       ]
     }

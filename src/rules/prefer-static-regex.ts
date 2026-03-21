@@ -1,5 +1,7 @@
 import type {Rule} from 'eslint';
-import type {NewExpression} from 'estree';
+import type {Literal, NewExpression, RegExpLiteral} from 'estree';
+
+const statefulFlags = /[gy]/;
 
 function isStaticNewRegExp(node: NewExpression): boolean {
   if (
@@ -11,9 +13,20 @@ function isStaticNewRegExp(node: NewExpression): boolean {
     return false;
   }
 
-  return node.arguments.every(
-    (arg) => arg.type === 'Literal' && typeof arg.value === 'string'
-  );
+  if (
+    !node.arguments.every(
+      (arg) => arg.type === 'Literal' && typeof arg.value === 'string'
+    )
+  ) {
+    return false;
+  }
+
+  const flagsArg = node.arguments[1] as Literal | undefined;
+  if (flagsArg && statefulFlags.test(flagsArg.value as string)) {
+    return false;
+  }
+
+  return true;
 }
 
 export const preferStaticRegex: Rule.RuleModule = {
@@ -33,6 +46,10 @@ export const preferStaticRegex: Rule.RuleModule = {
   create(context) {
     return {
       ':function Literal[regex]'(node: Rule.Node) {
+        const {flags} = (node as unknown as RegExpLiteral).regex;
+        if (statefulFlags.test(flags)) {
+          return;
+        }
         context.report({node, messageId: 'preferStatic'});
       },
       ':function NewExpression'(
