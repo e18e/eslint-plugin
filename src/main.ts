@@ -42,7 +42,7 @@ const plugin: ESLint.Plugin = {
     'prefer-exponentiation-operator': preferExponentiationOperator,
     'prefer-nullish-coalescing': preferNullishCoalescing,
     'prefer-object-has-own': preferObjectHasOwn,
-    'prefer-spread-syntax': preferSpreadSyntax,
+    'prefer-spread-syntax': preferSpreadSyntax as never as Rule.RuleModule,
     'prefer-url-canparse': preferUrlCanParse,
     'no-indexof-equality': noIndexOfEquality as never as Rule.RuleModule,
     'prefer-timer-args': preferTimerArgs,
