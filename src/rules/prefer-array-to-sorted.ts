@@ -1,5 +1,10 @@
 import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
-import {getArrayFromCopyPattern, formatArguments} from '../utils/ast.js';
+import {
+  getArrayFromCopyPattern,
+  formatArguments,
+  needsParensForPropertyAccess,
+  isCopyPatternOptional
+} from '../utils/ast.js';
 import {isArrayType} from '../utils/typescript.js';
 
 type MessageIds = 'preferToSorted';
@@ -39,19 +44,23 @@ export const preferArrayToSorted: TSESLint.RuleModule<MessageIds, []> = {
             return;
           }
 
-          const arrayText = sourceCode.getText(arrayNode);
+          const rawText = sourceCode.getText(arrayNode);
+          const arrayText = needsParensForPropertyAccess(arrayNode)
+            ? `(${rawText})`
+            : rawText;
           const argsText = formatArguments(node.arguments, sourceCode);
+          const optionalChain = isCopyPatternOptional(sortCallee) ? '?.' : '.';
 
           context.report({
             node,
             messageId: 'preferToSorted',
             data: {
-              array: arrayText
+              array: rawText
             },
             fix(fixer) {
               return fixer.replaceText(
                 node,
-                `${arrayText}.toSorted(${argsText})`
+                `${arrayText}${optionalChain}toSorted(${argsText})`
               );
             }
           });

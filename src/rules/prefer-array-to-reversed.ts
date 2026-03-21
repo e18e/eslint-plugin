@@ -1,6 +1,10 @@
 import type {Rule} from 'eslint';
 import type {CallExpression} from 'estree';
-import {getArrayFromCopyPattern} from '../utils/ast.js';
+import {
+  getArrayFromCopyPattern,
+  needsParensForPropertyAccess,
+  isCopyPatternOptional
+} from '../utils/ast.js';
 
 export const preferArrayToReversed: Rule.RuleModule = {
   meta: {
@@ -34,16 +38,25 @@ export const preferArrayToReversed: Rule.RuleModule = {
         const arrayNode = getArrayFromCopyPattern(reverseCallee);
 
         if (arrayNode) {
-          const arrayText = sourceCode.getText(arrayNode);
+          const rawText = sourceCode.getText(arrayNode);
+          const arrayText = needsParensForPropertyAccess(arrayNode)
+            ? `(${rawText})`
+            : rawText;
+          const optionalChain = isCopyPatternOptional(reverseCallee)
+            ? '?.'
+            : '.';
 
           context.report({
             node,
             messageId: 'preferToReversed',
             data: {
-              array: arrayText
+              array: rawText
             },
             fix(fixer) {
-              return fixer.replaceText(node, `${arrayText}.toReversed()`);
+              return fixer.replaceText(
+                node,
+                `${arrayText}${optionalChain}toReversed()`
+              );
             }
           });
         }

@@ -94,6 +94,35 @@ ruleTester.run('prefer-array-to-reversed', preferArrayToReversed, {
       code: 'const result = someFunc().slice(0).reverse();',
       output: 'const result = someFunc().toReversed();',
       errors: [{messageId: 'preferToReversed', data: {array: 'someFunc()'}}]
+    },
+
+    // Expressions needing parentheses for property access
+    {
+      code: 'const reversed = [...a ?? b].reverse();',
+      output: 'const reversed = (a ?? b).toReversed();',
+      errors: [{messageId: 'preferToReversed', data: {array: 'a ?? b'}}]
+    },
+    {
+      code: 'const reversed = [...a || b].reverse();',
+      output: 'const reversed = (a || b).toReversed();',
+      errors: [{messageId: 'preferToReversed', data: {array: 'a || b'}}]
+    },
+    {
+      code: 'const reversed = [...a ? b : c].reverse();',
+      output: 'const reversed = (a ? b : c).toReversed();',
+      errors: [{messageId: 'preferToReversed', data: {array: 'a ? b : c'}}]
+    },
+
+    // Optional chaining preservation
+    {
+      code: 'const reversed = obj.arr?.slice().reverse();',
+      output: 'const reversed = obj.arr?.toReversed();',
+      errors: [{messageId: 'preferToReversed', data: {array: 'obj.arr'}}]
+    },
+    {
+      code: 'const reversed = obj.arr?.concat().reverse();',
+      output: 'const reversed = obj.arr?.toReversed();',
+      errors: [{messageId: 'preferToReversed', data: {array: 'obj.arr'}}]
     }
   ]
 });
