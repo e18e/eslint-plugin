@@ -1,6 +1,11 @@
 import type {Rule} from 'eslint';
 import type {CallExpression} from 'estree';
-import {getArrayFromCopyPattern, formatArguments} from '../utils/ast.js';
+import {
+  getArrayFromCopyPattern,
+  formatArguments,
+  needsParensForPropertyAccess,
+  isCopyPatternOptional
+} from '../utils/ast.js';
 
 export const preferArrayToSpliced: Rule.RuleModule = {
   meta: {
@@ -34,19 +39,25 @@ export const preferArrayToSpliced: Rule.RuleModule = {
         const arrayNode = getArrayFromCopyPattern(spliceCallee);
 
         if (arrayNode) {
-          const arrayText = sourceCode.getText(arrayNode);
+          const rawText = sourceCode.getText(arrayNode);
+          const arrayText = needsParensForPropertyAccess(arrayNode)
+            ? `(${rawText})`
+            : rawText;
           const argsText = formatArguments(node.arguments, sourceCode);
+          const optionalChain = isCopyPatternOptional(spliceCallee)
+            ? '?.'
+            : '.';
 
           context.report({
             node,
             messageId: 'preferToSpliced',
             data: {
-              array: arrayText
+              array: rawText
             },
             fix(fixer) {
               return fixer.replaceText(
                 node,
-                `${arrayText}.toSpliced(${argsText})`
+                `${arrayText}${optionalChain}toSpliced(${argsText})`
               );
             }
           });

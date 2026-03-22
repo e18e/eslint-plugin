@@ -187,6 +187,58 @@ ruleTester.run(
             column: 16
           }
         ]
+      },
+
+      // Expressions needing parentheses for property access
+      {
+        code: 'const sorted = [...a ?? b].sort(fn);',
+        output: 'const sorted = (a ?? b).toSorted(fn);',
+        errors: [
+          {
+            messageId: 'preferToSorted',
+            data: {array: 'a ?? b'},
+            line: 1,
+            column: 16
+          }
+        ]
+      },
+      {
+        code: 'const sorted = [...a || b].sort();',
+        output: 'const sorted = (a || b).toSorted();',
+        errors: [
+          {
+            messageId: 'preferToSorted',
+            data: {array: 'a || b'},
+            line: 1,
+            column: 16
+          }
+        ]
+      },
+
+      // Optional chaining preservation
+      {
+        code: 'const sorted = obj.arr?.slice().sort(fn);',
+        output: 'const sorted = obj.arr?.toSorted(fn);',
+        errors: [
+          {
+            messageId: 'preferToSorted',
+            data: {array: 'obj.arr'},
+            line: 1,
+            column: 16
+          }
+        ]
+      },
+      {
+        code: 'const sorted = obj.arr?.concat().sort();',
+        output: 'const sorted = obj.arr?.toSorted();',
+        errors: [
+          {
+            messageId: 'preferToSorted',
+            data: {array: 'obj.arr'},
+            line: 1,
+            column: 16
+          }
+        ]
       }
     ]
   }

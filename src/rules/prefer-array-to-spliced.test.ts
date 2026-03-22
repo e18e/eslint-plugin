@@ -117,6 +117,34 @@ ruleTester.run('prefer-array-to-spliced', preferArrayToSpliced, {
           column: 25
         }
       ]
+    },
+
+    // Expressions needing parentheses for property access
+    {
+      code: 'const copy = [...a ?? b].splice(0, 1);',
+      output: 'const copy = (a ?? b).toSpliced(0, 1);',
+      errors: [
+        {
+          messageId: 'preferToSpliced',
+          data: {array: 'a ?? b'},
+          line: 1,
+          column: 14
+        }
+      ]
+    },
+
+    // Optional chaining preservation
+    {
+      code: 'const copy = obj.arr?.slice().splice(0, 1);',
+      output: 'const copy = obj.arr?.toSpliced(0, 1);',
+      errors: [
+        {
+          messageId: 'preferToSpliced',
+          data: {array: 'obj.arr'},
+          line: 1,
+          column: 14
+        }
+      ]
     }
   ]
 });

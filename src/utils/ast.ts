@@ -128,6 +128,42 @@ export function getArrayFromCopyPattern(node: AnyNode): AnyNode | null {
 }
 
 /**
+ * Checks if a node needs to be wrapped in parentheses when used as the
+ * object of a property access (e.g. `expr.foo()`).
+ */
+export function needsParensForPropertyAccess(node: AnyNode): boolean {
+  switch (node.type) {
+    case 'Identifier':
+    case 'MemberExpression':
+    case 'CallExpression':
+    case 'Literal':
+    case 'ArrayExpression':
+    case 'ObjectExpression':
+    case 'TemplateLiteral':
+    case 'TaggedTemplateExpression':
+    case 'ThisExpression':
+    case 'NewExpression':
+    case 'ChainExpression':
+    case 'MetaProperty':
+      return false;
+    default:
+      return true;
+  }
+}
+
+/**
+ * Checks if a copy pattern (node passed to getArrayFromCopyPattern) uses
+ * optional chaining on the copy method call, e.g. `arr?.slice()`.
+ */
+export function isCopyPatternOptional(node: AnyNode): boolean {
+  return (
+    node.type === 'CallExpression' &&
+    node.callee.type === 'MemberExpression' &&
+    node.callee.optional === true
+  );
+}
+
+/**
  * Formats arguments from a CallExpression as a comma-separated string.
  */
 export function formatArguments(
