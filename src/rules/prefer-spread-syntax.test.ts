@@ -1,6 +1,24 @@
 import {RuleTester} from 'eslint';
+import {RuleTester as TSRuleTester} from '@typescript-eslint/rule-tester';
 import {preferSpreadSyntax} from './prefer-spread-syntax.js';
+import * as path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
+const rootDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../..'
+);
+const typedRuleTester = new TSRuleTester({
+  languageOptions: {
+    parserOptions: {
+      projectService: {
+        allowDefaultProject: ['*.ts'],
+        defaultProject: './tsconfig.json'
+      },
+      tsconfigRootDir: rootDir
+    }
+  }
+});
 const ruleTester = new RuleTester({
   languageOptions: {
     ecmaVersion: 2022,
@@ -8,7 +26,7 @@ const ruleTester = new RuleTester({
   }
 });
 
-ruleTester.run('prefer-spread-syntax', preferSpreadSyntax, {
+ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
   valid: [
     'const combined = [...arr, ...other];',
     'const merged = {...obj1, ...obj2};',
@@ -50,7 +68,7 @@ ruleTester.run('prefer-spread-syntax', preferSpreadSyntax, {
   ],
 
   invalid: [
-    // Array concat single argument
+    // Array concat single argument (when untyped, all args are spread)
     {
       code: 'const combined = arr.concat(other);',
       output: 'const combined = [...arr, ...other];',
@@ -301,6 +319,99 @@ const max = Math.max(...numbers);`,
           messageId: 'preferSpreadFunction',
           line: 4,
           column: 13
+        }
+      ]
+    }
+  ]
+});
+
+typedRuleTester.run('prefer-spread-syntax (typed)', preferSpreadSyntax, {
+  valid: [
+    // Non-array object should not be flagged
+    'const s: string = "hello"; s.concat(" world");',
+    'const s = "hello"; s.concat(" world");',
+
+    // concat with no arguments
+    'const arr: number[] = [1]; arr.concat();',
+
+    // Buffer.concat
+    'Buffer.concat([]);'
+  ],
+
+  invalid: [
+    // Array concat with array argument
+    {
+      code: 'const arr: number[] = [1, 2]; const other: number[] = [3]; arr.concat(other);',
+      output:
+        'const arr: number[] = [1, 2]; const other: number[] = [3]; [...arr, ...other];',
+      errors: [
+        {
+          messageId: 'preferSpreadArray',
+          line: 1,
+          column: 60,
+          endLine: 1,
+          endColumn: 77
+        }
+      ]
+    },
+
+    // Array concat with non-array argument
+    {
+      code: 'const arr: number[] = [1, 2]; const n: number = 3; arr.concat(n);',
+      output: 'const arr: number[] = [1, 2]; const n: number = 3; [...arr, n];',
+      errors: [
+        {
+          messageId: 'preferSpreadArray',
+          line: 1,
+          column: 52,
+          endLine: 1,
+          endColumn: 65
+        }
+      ]
+    },
+
+    // Mixed array and non-array arguments
+    {
+      code: 'const arr: number[] = [1]; const other: number[] = [2]; const n: number = 3; arr.concat(other, n);',
+      output:
+        'const arr: number[] = [1]; const other: number[] = [2]; const n: number = 3; [...arr, ...other, n];',
+      errors: [
+        {
+          messageId: 'preferSpreadArray',
+          line: 1,
+          column: 78,
+          endLine: 1,
+          endColumn: 98
+        }
+      ]
+    },
+
+    // Array literal object with non-array argument
+    {
+      code: 'const n: number = 1; [1, 2].concat(n);',
+      output: 'const n: number = 1; [...[1, 2], n];',
+      errors: [
+        {
+          messageId: 'preferSpreadArray',
+          line: 1,
+          column: 22,
+          endLine: 1,
+          endColumn: 38
+        }
+      ]
+    },
+
+    // Array concat with array literal argument
+    {
+      code: 'const arr: number[] = [1, 2]; arr.concat([3, 4]);',
+      output: 'const arr: number[] = [1, 2]; [...arr, ...[3, 4]];',
+      errors: [
+        {
+          messageId: 'preferSpreadArray',
+          line: 1,
+          column: 31,
+          endLine: 1,
+          endColumn: 49
         }
       ]
     }

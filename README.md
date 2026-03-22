@@ -141,13 +141,13 @@ Read more at the
 | [prefer-array-at](./src/rules/prefer-array-at.ts) | Prefer `Array.prototype.at()` over length-based indexing | ✅ | ✅ | 🔶 |
 | [prefer-array-fill](./src/rules/prefer-array-fill.ts) | Prefer `Array.prototype.fill()` over `Array.from()` or `map()` with constant values | ✅ | ✅ | ✖️ |
 | [prefer-includes](./src/rules/prefer-includes.ts) | Prefer `.includes()` over `indexOf()` comparisons for arrays and strings | ✅ | ✅ | ✖️ |
-| [prefer-array-to-reversed](./src/rules/prefer-array-to-reversed.ts) | Prefer `Array.prototype.toReversed()` over copying and reversing arrays | ✅ | ✅ | ✖️ |
+| [prefer-array-to-reversed](./src/rules/prefer-array-to-reversed.ts) | Prefer `Array.prototype.toReversed()` over copying and reversing arrays | ✅ | ✅ | 🔶 |
 | [prefer-array-to-sorted](./src/rules/prefer-array-to-sorted.ts) | Prefer `Array.prototype.toSorted()` over copying and sorting arrays | ✅ | ✅ | 🔶 |
 | [prefer-array-to-spliced](./src/rules/prefer-array-to-spliced.ts) | Prefer `Array.prototype.toSpliced()` over copying and splicing arrays | ✅ | ✅ | ✖️ |
 | [prefer-exponentiation-operator](./src/rules/prefer-exponentiation-operator.ts) | Prefer the exponentiation operator `**` over `Math.pow()` | ✅ | ✅ | ✖️ |
 | [prefer-nullish-coalescing](./src/rules/prefer-nullish-coalescing.ts) | Prefer nullish coalescing operator (`??` and `??=`) over verbose null checks | ✅ | ✅ | ✖️ |
 | [prefer-object-has-own](./src/rules/prefer-object-has-own.ts) | Prefer `Object.hasOwn()` over `Object.prototype.hasOwnProperty.call()` and `obj.hasOwnProperty()` | ✅ | ✅ | ✖️ |
-| [prefer-spread-syntax](./src/rules/prefer-spread-syntax.ts) | Prefer spread syntax over `Array.concat()`, `Array.from()`, `Object.assign({}, ...)`, and `Function.apply()` | ✅ | ✅ | ✖️ |
+| [prefer-spread-syntax](./src/rules/prefer-spread-syntax.ts) | Prefer spread syntax over `Array.concat()`, `Array.from()`, `Object.assign({}, ...)`, and `Function.apply()` | ✅ | ✅ | 🔶 |
 | [prefer-url-canparse](./src/rules/prefer-url-canparse.ts) | Prefer `URL.canParse()` over try-catch blocks for URL validation | ✅ | 💡 | ✖️ |
 
 ### Module replacements
@@ -166,7 +166,7 @@ Read more at the
 | [prefer-timer-args](./src/rules/prefer-timer-args.ts) | Prefer passing function and arguments directly to `setTimeout`/`setInterval` instead of wrapping in an arrow function or using `bind` | ✅ | ✅ | ✖️ |
 | [prefer-date-now](./src/rules/prefer-date-now.ts) | Prefer `Date.now()` over `new Date().getTime()` and `+new Date()` | ✅ | ✅ | ✖️ |
 | [prefer-regex-test](./src/rules/prefer-regex-test.ts) | Prefer `RegExp.test()` over `String.match()` and `RegExp.exec()` when only checking for match existence | ✅ | ✅ | 🔶 |
-| [prefer-static-regex](./src/rules/prefer-static-regex.ts) | Prefer defining regular expressions at module scope to avoid re-compilation on every function call | ✅ | ✖️ | ✖️ |
+| [prefer-static-regex](./src/rules/prefer-static-regex.ts) | Prefer defining regular expressions at module scope to avoid re-compilation on every function call | ✅ | ✖️ | 🔶 |
 | [prefer-inline-equality](./src/rules/prefer-inline-equality.ts) | Prefer inline equality checks over temporary object creation for simple comparisons | ✖️ | ✅ | 🔶 |
 
 ## Sponsors

@@ -1,18 +1,19 @@
-import type {Rule} from 'eslint';
-import type {CallExpression} from 'estree';
+import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
 import {
   getArrayFromCopyPattern,
   needsParensForPropertyAccess,
   isCopyPatternOptional
 } from '../utils/ast.js';
+import {isArrayType} from '../utils/typescript.js';
 
-export const preferArrayToReversed: Rule.RuleModule = {
+type MessageIds = 'preferToReversed';
+
+export const preferArrayToReversed: TSESLint.RuleModule<MessageIds, []> = {
   meta: {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer Array.prototype.toReversed() over copying and reversing arrays',
-      recommended: true
+        'Prefer Array.prototype.toReversed() over copying and reversing arrays'
     },
     fixable: 'code',
     schema: [],
@@ -21,11 +22,12 @@ export const preferArrayToReversed: Rule.RuleModule = {
         'Use {{array}}.toReversed() instead of copying and reversing'
     }
   },
+  defaultOptions: [],
   create(context) {
     const sourceCode = context.sourceCode;
 
     return {
-      CallExpression(node: CallExpression) {
+      CallExpression(node: TSESTree.CallExpression) {
         if (
           node.callee.type !== 'MemberExpression' ||
           node.callee.property.type !== 'Identifier' ||
@@ -38,6 +40,10 @@ export const preferArrayToReversed: Rule.RuleModule = {
         const arrayNode = getArrayFromCopyPattern(reverseCallee);
 
         if (arrayNode) {
+          if (!isArrayType(arrayNode, context)) {
+            return;
+          }
+
           const rawText = sourceCode.getText(arrayNode);
           const arrayText = needsParensForPropertyAccess(arrayNode)
             ? `(${rawText})`

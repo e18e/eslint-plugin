@@ -1,20 +1,25 @@
-import type {Rule} from 'eslint';
-import type {CallExpression, Expression} from 'estree';
+import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
+import {isArrayType} from '../utils/typescript.js';
 
-function isNullOrUndefined(node: Expression): boolean {
+type MessageIds =
+  | 'preferSpreadArray'
+  | 'preferSpreadArrayFrom'
+  | 'preferSpreadObject'
+  | 'preferSpreadFunction';
+
+function isNullOrUndefined(node: TSESTree.Expression): boolean {
   if (node.type === 'Literal' && node.value === null) {
     return true;
   }
   return node.type === 'Identifier' && node.name === 'undefined';
 }
 
-export const preferSpreadSyntax: Rule.RuleModule = {
+export const preferSpreadSyntax: TSESLint.RuleModule<MessageIds, []> = {
   meta: {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer spread syntax over Array.concat(), Array.from(), Object.assign({}, ...), and Function.apply()',
-      recommended: true
+        'Prefer spread syntax over Array.concat(), Array.from(), Object.assign({}, ...), and Function.apply()'
     },
     fixable: 'code',
     schema: [],
@@ -29,16 +34,17 @@ export const preferSpreadSyntax: Rule.RuleModule = {
         'Use spread syntax fn(...args) instead of fn.apply(null/undefined, args)'
     }
   },
+  defaultOptions: [],
   create(context) {
     const sourceCode = context.sourceCode;
 
     return {
-      CallExpression(node: CallExpression) {
+      CallExpression(node: TSESTree.CallExpression) {
         if (node.callee.type !== 'MemberExpression') {
           return;
         }
 
-        let messageId: string | undefined;
+        let messageId: MessageIds | undefined;
         let replacement: string | undefined;
 
         // array.concat()
@@ -52,12 +58,26 @@ export const preferSpreadSyntax: Rule.RuleModule = {
             node.callee.object.name === 'Buffer'
           )
         ) {
+          // If type info is available, only flag when the receiver is an array
+          if (!isArrayType(node.callee.object, context)) {
+            return;
+          }
+
           const arrayText = sourceCode.getText(node.callee.object);
-          const argTexts = node.arguments.map((arg) => sourceCode.getText(arg));
-          const spreadParts = [arrayText, ...argTexts]
-            .map((part) => `...${part}`)
-            .join(', ');
-          replacement = `[${spreadParts}]`;
+          const parts = [`...${arrayText}`];
+
+          for (const arg of node.arguments) {
+            const argText = sourceCode.getText(arg);
+            if (arg.type === 'SpreadElement') {
+              parts.push(argText);
+            } else if (isArrayType(arg, context)) {
+              parts.push(`...${argText}`);
+            } else {
+              parts.push(argText);
+            }
+          }
+
+          replacement = `[${parts.join(', ')}]`;
           messageId = 'preferSpreadArray';
         }
         // Array.from(iterable) with no mapper
@@ -139,7 +159,7 @@ export const preferSpreadSyntax: Rule.RuleModule = {
             node,
             messageId,
             fix(fixer) {
-              return fixer.replaceText(node, replacement);
+              return fixer.replaceText(node, replacement!);
             }
           });
         }
