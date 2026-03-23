@@ -120,8 +120,17 @@ export const preferSpreadSyntax: TSESLint.RuleModule<MessageIds, []> = {
             );
 
             if (!hasUnquotedProto) {
-              const spreadArgs = node.arguments
-                .slice(1)
+              const restArgs = node.arguments.slice(1);
+
+              // If any argument is already a spread element (e.g. ...objs),
+              // we can't safely convert since Object.assign({}, ...objs) spreads
+              // array elements as individual arguments, which has no simple
+              // equivalent in object spread syntax.
+              if (restArgs.some((arg) => arg.type === 'SpreadElement')) {
+                return;
+              }
+
+              const spreadArgs = restArgs
                 .map((arg) => `...${sourceCode.getText(arg)}`)
                 .join(', ');
 
