@@ -63,17 +63,33 @@ export const preferSpreadSyntax: TSESLint.RuleModule<MessageIds, []> = {
             return;
           }
 
-          const arrayText = sourceCode.getText(node.callee.object);
-          const parts = [`...${arrayText}`];
+          const parts: string[] = [];
+
+          // For array literals, inline elements; otherwise spread
+          const receiver = node.callee.object;
+          if (receiver.type === 'ArrayExpression') {
+            for (const el of receiver.elements) {
+              if (el) {
+                parts.push(sourceCode.getText(el));
+              }
+            }
+          } else {
+            parts.push(`...${sourceCode.getText(receiver)}`);
+          }
 
           for (const arg of node.arguments) {
-            const argText = sourceCode.getText(arg);
             if (arg.type === 'SpreadElement') {
-              parts.push(argText);
+              parts.push(sourceCode.getText(arg));
+            } else if (arg.type === 'ArrayExpression') {
+              for (const el of arg.elements) {
+                if (el) {
+                  parts.push(sourceCode.getText(el));
+                }
+              }
             } else if (isArrayType(arg, context)) {
-              parts.push(`...${argText}`);
+              parts.push(`...${sourceCode.getText(arg)}`);
             } else {
-              parts.push(argText);
+              parts.push(sourceCode.getText(arg));
             }
           }
 
