@@ -59,6 +59,11 @@ ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
     'Object.assign({__proto__: null}, obj);',
     'Object.assign({__proto__: proto, foo: 1}, obj);',
 
+    // Object.assign with spread element argument — cannot be safely converted
+    // Object.assign({}, ...objs) !== {...objs} (the latter spreads the array as an object)
+    'Object.assign({}, ...objs);',
+    'Object.assign({}, ...objs, extra);',
+
     // apply with context
     'fn.apply(context, args);',
     'obj.method.apply(obj, args);',
