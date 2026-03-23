@@ -102,7 +102,20 @@ ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
     // Array concat with array literal
     {
       code: 'const result = arr.concat([1, 2, 3]);',
-      output: 'const result = [...arr, ...[1, 2, 3]];',
+      output: 'const result = [...arr, 1, 2, 3];',
+      errors: [
+        {
+          messageId: 'preferSpreadArray',
+          line: 1,
+          column: 16
+        }
+      ]
+    },
+
+    // Empty array concat
+    {
+      code: 'const result = [].concat(a, b);',
+      output: 'const result = [...a, ...b];',
       errors: [
         {
           messageId: 'preferSpreadArray',
@@ -115,7 +128,7 @@ ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
     // Array concat chained expression
     {
       code: 'const result = [1, 2].concat([3, 4]);',
-      output: 'const result = [...[1, 2], ...[3, 4]];',
+      output: 'const result = [1, 2, 3, 4];',
       errors: [
         {
           messageId: 'preferSpreadArray',
@@ -300,7 +313,7 @@ ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
 const fromArray = Array.from(items);
 const obj = Object.assign({}, {a: 1}, {b: 2});
 const max = Math.max.apply(null, numbers);`,
-      output: `const arr = [...[1, 2], ...[3, 4]];
+      output: `const arr = [1, 2, 3, 4];
 const fromArray = [...items];
 const obj = {...{a: 1}, ...{b: 2}};
 const max = Math.max(...numbers);`,
@@ -394,7 +407,7 @@ typedRuleTester.run('prefer-spread-syntax (typed)', preferSpreadSyntax, {
     // Array literal object with non-array argument
     {
       code: 'const n: number = 1; [1, 2].concat(n);',
-      output: 'const n: number = 1; [...[1, 2], n];',
+      output: 'const n: number = 1; [1, 2, n];',
       errors: [
         {
           messageId: 'preferSpreadArray',
@@ -409,7 +422,7 @@ typedRuleTester.run('prefer-spread-syntax (typed)', preferSpreadSyntax, {
     // Array concat with array literal argument
     {
       code: 'const arr: number[] = [1, 2]; arr.concat([3, 4]);',
-      output: 'const arr: number[] = [1, 2]; [...arr, ...[3, 4]];',
+      output: 'const arr: number[] = [1, 2]; [...arr, 3, 4];',
       errors: [
         {
           messageId: 'preferSpreadArray',
