@@ -40,7 +40,7 @@ export const preferArrayToReversed: TSESLint.RuleModule<MessageIds, []> = {
         const arrayNode = getArrayFromCopyPattern(reverseCallee);
 
         if (arrayNode) {
-          if (!isArrayType(arrayNode, context)) {
+          if (isArrayType(arrayNode, context) === false) {
             return;
           }
 

@@ -59,7 +59,7 @@ export const preferSpreadSyntax: TSESLint.RuleModule<MessageIds, []> = {
           )
         ) {
           // If type info is available, only flag when the receiver is an array
-          if (!isArrayType(node.callee.object, context)) {
+          if (isArrayType(node.callee.object, context) === false) {
             return;
           }
 
@@ -86,7 +86,7 @@ export const preferSpreadSyntax: TSESLint.RuleModule<MessageIds, []> = {
                   parts.push(sourceCode.getText(el));
                 }
               }
-            } else if (isArrayType(arg, context)) {
+            } else if (isArrayType(arg, context) === true) {
               parts.push(`...${sourceCode.getText(arg)}`);
             } else {
               parts.push(sourceCode.getText(arg));

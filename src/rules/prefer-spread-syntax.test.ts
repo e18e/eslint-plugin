@@ -73,10 +73,10 @@ ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
   ],
 
   invalid: [
-    // Array concat single argument (when untyped, all args are spread)
+    // Array concat single argument (when untyped, unknown args are not spread)
     {
       code: 'const combined = arr.concat(other);',
-      output: 'const combined = [...arr, ...other];',
+      output: 'const combined = [...arr, other];',
       errors: [
         {
           messageId: 'preferSpreadArray',
@@ -89,7 +89,7 @@ ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
     // Array concat multiple arguments
     {
       code: 'const multi = arr.concat(a, b, c);',
-      output: 'const multi = [...arr, ...a, ...b, ...c];',
+      output: 'const multi = [...arr, a, b, c];',
       errors: [
         {
           messageId: 'preferSpreadArray',
@@ -115,7 +115,7 @@ ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
     // Empty array concat
     {
       code: 'const result = [].concat(a, b);',
-      output: 'const result = [...a, ...b];',
+      output: 'const result = [a, b];',
       errors: [
         {
           messageId: 'preferSpreadArray',

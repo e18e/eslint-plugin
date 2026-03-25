@@ -57,20 +57,21 @@ const typedArrayTypes = [
 
 /**
  * Checks if a node's type is an Array type (Array, tuple, or typed array)
- * Returns true if types are unavailable (to avoid false negatives)
+ * Returns undefined if types are unavailable, letting callers choose their
+ * own default behaviour
  */
 export function isArrayType(
   node: TSESTree.Node,
   context: Readonly<TSESLint.RuleContext<string, unknown[]>>
-): boolean {
+): boolean | undefined {
   const services = tryGetTypedParserServices(context);
   if (!services) {
-    return true;
+    return undefined;
   }
 
   const type = services.getTypeAtLocation(node);
   if (!type) {
-    return true;
+    return undefined;
   }
 
   const checker = services.program.getTypeChecker();
@@ -95,20 +96,21 @@ const setTypePattern = /^(Readonly)?Set</;
 
 /**
  * Checks if a node's type is a Set
- * Returns true if types are unavailable (to avoid false negatives)
+ * Returns undefined if types are unavailable, letting callers choose their
+ * own default behaviour
  */
 export function isSetType(
   node: TSESTree.Node,
   context: Readonly<TSESLint.RuleContext<string, unknown[]>>
-): boolean {
+): boolean | undefined {
   const services = tryGetTypedParserServices(context);
   if (!services) {
-    return true;
+    return undefined;
   }
 
   const type = services.getTypeAtLocation(node);
   if (!type) {
-    return true;
+    return undefined;
   }
 
   const checker = services.program.getTypeChecker();
@@ -119,20 +121,21 @@ export function isSetType(
 
 /**
  * Checks if a node's type is a string
- * Returns false if types are unavailable
+ * Returns undefined if types are unavailable, letting callers choose their
+ * own default behaviour
  */
 export function isStringType(
   node: TSESTree.Node,
   context: Readonly<TSESLint.RuleContext<string, unknown[]>>
-): boolean {
+): boolean | undefined {
   const services = tryGetTypedParserServices(context);
   if (!services) {
-    return false;
+    return undefined;
   }
 
   const type = services.getTypeAtLocation(node);
   if (!type) {
-    return false;
+    return undefined;
   }
 
   const checker = services.program.getTypeChecker();

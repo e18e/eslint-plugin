@@ -40,7 +40,7 @@ export const preferArrayToSorted: TSESLint.RuleModule<MessageIds, []> = {
         const arrayNode = getArrayFromCopyPattern(sortCallee);
 
         if (arrayNode) {
-          if (!isArrayType(arrayNode, context)) {
+          if (isArrayType(arrayNode, context) === false) {
             return;
           }
 
