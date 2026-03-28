@@ -1,5 +1,5 @@
-import {describe, it, expect} from 'vitest';
-import {ESLint} from 'eslint';
+import {describe, it, expect, expectTypeOf} from 'vitest';
+import {ESLint, type Linter} from 'eslint';
 import * as jsoncParser from 'jsonc-eslint-parser';
 import json from '@eslint/json';
 import plugin from './main.js';
@@ -54,5 +54,18 @@ describe('main plugin', () => {
     expect(results).toHaveLength(1);
     expect(results[0]!.messages).toHaveLength(0);
     expect(results[0]!.filePath).toContain('package.json');
+  });
+
+  it('should export valid config types', () => {
+    type ConfigName =
+      | 'recommended'
+      | 'modernization'
+      | 'moduleReplacements'
+      | 'performanceImprovements';
+
+    expectTypeOf(plugin).toHaveProperty('configs');
+    expectTypeOf(plugin.configs).toEqualTypeOf<
+      Readonly<Record<ConfigName, Linter.Config>>
+    >();
   });
 });
