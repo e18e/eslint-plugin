@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest';
-import {ESLint, type Linter} from 'eslint';
+import {ESLint} from 'eslint';
 import * as jsoncParser from 'jsonc-eslint-parser';
 import json from '@eslint/json';
 import plugin from './main.js';
@@ -15,7 +15,7 @@ describe('main plugin', () => {
             parser: jsoncParser
           }
         },
-        plugin.configs!.recommended as Linter.Config
+        plugin.configs.recommended
       ]
     });
 
@@ -41,7 +41,7 @@ describe('main plugin', () => {
           },
           language: 'json/json'
         },
-        plugin.configs!.recommended as Linter.Config
+        plugin.configs.recommended
       ]
     });
 
