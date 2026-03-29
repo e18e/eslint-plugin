@@ -57,15 +57,13 @@ describe('main plugin', () => {
   });
 
   it('should export valid config types', () => {
-    type ConfigName =
-      | 'recommended'
-      | 'modernization'
-      | 'moduleReplacements'
-      | 'performanceImprovements';
-
-    expectTypeOf(plugin).toHaveProperty('configs');
-    expectTypeOf(plugin.configs).toEqualTypeOf<
-      Readonly<Record<ConfigName, Linter.Config>>
-    >();
+    expectTypeOf(plugin.configs.recommended).toEqualTypeOf<Linter.Config>();
+    expectTypeOf(plugin.configs.modernization).toEqualTypeOf<Linter.Config>();
+    expectTypeOf(
+      plugin.configs.moduleReplacements
+    ).toEqualTypeOf<Linter.Config>();
+    expectTypeOf(
+      plugin.configs.performanceImprovements
+    ).toEqualTypeOf<Linter.Config>();
   });
 });
