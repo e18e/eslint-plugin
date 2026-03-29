@@ -29,7 +29,6 @@ const plugin: ESLint.Plugin = {
     name: 'e18e',
     namespace: 'e18e'
   },
-  configs: {},
   rules: {
     'prefer-array-at': preferArrayAt as never as Rule.RuleModule,
     'prefer-array-fill': preferArrayFill,
@@ -55,9 +54,15 @@ const plugin: ESLint.Plugin = {
   }
 };
 
-plugin.configs!.recommended = recommended(plugin);
-plugin.configs!.modernization = modernization(plugin);
-plugin.configs!.moduleReplacements = moduleReplacements(plugin);
-plugin.configs!.performanceImprovements = performanceImprovements(plugin);
+const configs = {
+  recommended: recommended(plugin),
+  modernization: modernization(plugin),
+  moduleReplacements: moduleReplacements(plugin),
+  performanceImprovements: performanceImprovements(plugin)
+} as const;
 
-export default plugin;
+plugin.configs = configs;
+
+export default plugin as Omit<ESLint.Plugin, 'configs'> & {
+  configs: typeof configs;
+};

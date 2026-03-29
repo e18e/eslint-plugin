@@ -6,6 +6,9 @@ export default defineConfig({
       provider: 'v8'
     },
     include: ['src/**/*.test.ts'],
-    setupFiles: ['src/test/setup.ts']
+    setupFiles: ['src/test/setup.ts'],
+    typecheck: {
+      enabled: true
+    }
   }
 })
