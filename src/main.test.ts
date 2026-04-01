@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest';
-import {ESLint, type Linter} from 'eslint';
+import {ESLint} from 'eslint';
 import * as jsoncParser from 'jsonc-eslint-parser';
 import json from '@eslint/json';
 import plugin from './main.js';
@@ -15,7 +15,7 @@ describe('main plugin', () => {
             parser: jsoncParser
           }
         },
-        plugin.configs!.recommended as Linter.Config
+        plugin.configs.recommended
       ]
     });
 
@@ -41,7 +41,7 @@ describe('main plugin', () => {
           },
           language: 'json/json'
         },
-        plugin.configs!.recommended as Linter.Config
+        plugin.configs.recommended
       ]
     });
 
@@ -54,5 +54,12 @@ describe('main plugin', () => {
     expect(results).toHaveLength(1);
     expect(results[0]!.messages).toHaveLength(0);
     expect(results[0]!.filePath).toContain('package.json');
+  });
+
+  it('should export valid config types', () => {
+    expect(plugin.configs.recommended).toBeDefined();
+    expect(plugin.configs.modernization).toBeDefined();
+    expect(plugin.configs.moduleReplacements).toBeDefined();
+    expect(plugin.configs.performanceImprovements).toBeDefined();
   });
 });
