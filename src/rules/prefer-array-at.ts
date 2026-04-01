@@ -73,8 +73,8 @@ export const preferArrayAt: TSESLint.RuleModule<MessageIds, []> = {
 
         // Check if the object supports .at() (array or string, when types are available)
         if (
-          !isArrayType(node.object, context) &&
-          !isStringType(node.object, context)
+          isArrayType(node.object, context) === false &&
+          isStringType(node.object, context) === false
         ) {
           return;
         }

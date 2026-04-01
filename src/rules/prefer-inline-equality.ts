@@ -1,9 +1,5 @@
 import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
-import {
-  isArrayType,
-  isSetType,
-  tryGetTypedParserServices
-} from '../utils/typescript.js';
+import {isArrayType, isSetType} from '../utils/typescript.js';
 
 type MessageIds = 'preferEquality';
 
@@ -122,8 +118,6 @@ function checkArrayIncludes(
     return;
   }
 
-  const hasTypes = tryGetTypedParserServices(context) !== null;
-
   for (const element of elements) {
     if (element === null) {
       return;
@@ -135,8 +129,8 @@ function checkArrayIncludes(
         return;
       }
       if (
-        !hasTypes ||
-        (!isArrayType(arg, context) && !isSetType(arg, context))
+        isArrayType(arg, context) !== true &&
+        isSetType(arg, context) !== true
       ) {
         return;
       }
