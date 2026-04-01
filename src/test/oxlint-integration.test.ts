@@ -45,7 +45,7 @@ describe('oxlint integration', () => {
     } catch (error) {
       const errorObj = error as {stdout: string; stderr: string};
       const output = errorObj.stdout + errorObj.stderr;
-      expect(output).toContain('e18e(prefer-includes)');
+      expect(output).toContain('@e18e(prefer-includes)');
       expect(output).toContain('invalid.js');
     }
   });
@@ -58,6 +58,6 @@ describe('oxlint integration', () => {
       cwd: process.cwd()
     });
 
-    expect(output).not.toContain('e18e/prefer-includes');
+    expect(output).not.toContain('@e18e/prefer-includes');
   });
 });
