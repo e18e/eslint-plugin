@@ -1,7 +1,9 @@
 import {RuleTester} from 'eslint';
-import {rules} from 'eslint-plugin-depend';
-import json from '@eslint/json';
-import * as jsoncParser from 'jsonc-eslint-parser';
+import * as tseslintParser from '@typescript-eslint/parser';
+import * as jsonParser from 'jsonc-eslint-parser';
+import eslintJson from '@eslint/json';
+import {resolveDocUrl} from 'module-replacements';
+import {banDependencies} from './ban-dependencies.js';
 
 const ruleTester = new RuleTester({
   languageOptions: {
@@ -9,67 +11,338 @@ const ruleTester = new RuleTester({
     sourceType: 'module'
   }
 });
-
 const jsonRuleTester = new RuleTester({
+  files: ['**/*.json'],
   language: 'json/json',
-  plugins: {json}
+  plugins: {
+    json: eslintJson
+  }
 });
-
-// TODO (jg): one day the ban-dependencies rule will live in this repo, so
-// we should move all the tests from the depend repo to here.
-
-const banDependencies = rules['ban-dependencies']!;
 
 ruleTester.run('ban-dependencies', banDependencies, {
   valid: [
-    // Allowed dependencies
-    'import {onMount} from "svelte"',
-    'import App from "./App.svelte"',
-    'const fs = require("fs")',
-
-    // Built-in modules are allowed
-    'import path from "path"',
-    'import {readFile} from "fs/promises"',
+    'const foo = 303;',
     {
-      code: `{"dependencies": {"typescript": "^5.3.2"}}`,
+      code: `import foo = require('unknown-module');`,
+      languageOptions: {
+        parser: tseslintParser
+      }
+    },
+    {
+      code: `import foo from 'unknown-module';`
+    },
+    {
+      code: `const foo = require('unknown-module');`
+    },
+    {
+      code: `
+        const moduleName = 'is-' + 'number';
+        require(moduleName);
+      `
+    },
+    {
+      code: `
+        const moduleName = 'is-' + 'number';
+        await import(moduleName);
+      `
+    },
+    {
+      code: `const foo = require('is-number');`,
+      options: [
+        {
+          presets: []
+        }
+      ]
+    },
+    {
+      code: `import foo from 'is-nan';`,
+      options: [
+        {
+          presets: ['native'],
+          allowed: ['is-nan']
+        }
+      ]
+    },
+    {
+      code: `import foo from 'oogabooga';`,
+      options: [
+        {
+          modules: ['oogabooga'],
+          allowed: ['oogabooga']
+        }
+      ]
+    },
+    {
+      code: `{
+        "dependencies": {
+          "unknown-module": "^1.0.0"
+        }
+      }`,
       filename: 'package.json',
-      languageOptions: {parser: jsoncParser}
+      languageOptions: {
+        parser: jsonParser
+      }
+    },
+    {
+      code: `{
+        "dependencies": {
+          "npm-run-all": "^1.0.0"
+        }
+      }`,
+      filename: 'not-a-package.json',
+      languageOptions: {
+        parser: jsonParser
+      }
+    },
+    {
+      code: `{
+        "not-dependencies": {
+          "some-other-nonsense": 123
+        }
+      }`,
+      filename: 'package.json',
+      languageOptions: {
+        parser: jsonParser
+      }
     }
   ],
+
   invalid: [
     {
-      code: 'import moment from "moment"',
-      errors: [{messageId: 'documentedReplacement'}]
+      code: `const foo = require('is-number');`,
+      errors: [
+        {
+          line: 1,
+          column: 13,
+          messageId: 'simpleReplacement',
+          data: {
+            name: 'is-number',
+            description:
+              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
+          }
+        }
+      ]
     },
     {
-      code: 'const moment = require("moment")',
-      errors: [{messageId: 'documentedReplacement'}]
+      code: `import foo from 'is-number';`,
+      errors: [
+        {
+          line: 1,
+          column: 1,
+          messageId: 'simpleReplacement',
+          data: {
+            name: 'is-number',
+            description:
+              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
+          }
+        }
+      ]
     },
     {
-      code: 'import _ from "lodash"',
-      errors: [{messageId: 'documentedReplacement'}]
+      code: `const foo = await import('is-number');`,
+      errors: [
+        {
+          line: 1,
+          column: 19,
+          messageId: 'simpleReplacement',
+          data: {
+            name: 'is-number',
+            description:
+              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
+          }
+        }
+      ]
     },
     {
-      code: `{"dependencies": {"moment": "^1.0.0"}}`,
+      code: `import foo = require('is-number');`,
+      languageOptions: {
+        parser: tseslintParser
+      },
+      errors: [
+        {
+          line: 1,
+          column: 1,
+          messageId: 'simpleReplacement',
+          data: {
+            name: 'is-number',
+            description:
+              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
+          }
+        }
+      ]
+    },
+    {
+      code: `import foo from 'object.entries';`,
+      errors: [
+        {
+          line: 1,
+          column: 1,
+          messageId: 'nativeReplacement',
+          data: {
+            name: 'object.entries',
+            replacement: 'Object.entries',
+            url: resolveDocUrl({
+              type: 'mdn',
+              id: 'Web/JavaScript/Reference/Global_Objects/Object/entries'
+            })
+          }
+        }
+      ]
+    },
+    {
+      code: `import foo from 'npm-run-all';`,
+      errors: [
+        {
+          line: 1,
+          column: 1,
+          messageId: 'documentedReplacement',
+          data: {
+            name: 'npm-run-all',
+            replacement: 'npm-run-all2',
+            url: resolveDocUrl({type: 'e18e', id: 'npm-run-all'})
+          }
+        }
+      ]
+    },
+    {
+      code: `import foo from 'oogabooga';`,
+      options: [
+        {
+          modules: ['oogabooga']
+        }
+      ],
+      errors: [
+        {
+          line: 1,
+          column: 1,
+          messageId: 'removalReplacement',
+          data: {
+            name: 'oogabooga',
+            description:
+              'This module is disallowed and should be replaced with an alternative.'
+          }
+        }
+      ]
+    },
+    {
+      code: `import foo from 'object-is';`,
+      options: [
+        {
+          presets: ['native'],
+          allowed: ['is-nan']
+        }
+      ],
+      errors: [
+        {
+          line: 1,
+          column: 1,
+          messageId: 'nativeReplacement',
+          data: {
+            name: 'object-is',
+            replacement: 'Object.is',
+            url: resolveDocUrl({
+              type: 'mdn',
+              id: 'Web/JavaScript/Reference/Global_Objects/Object/is'
+            })
+          }
+        }
+      ]
+    },
+    {
+      code: `import foo from 'oogabooga';`,
+      options: [
+        {
+          modules: ['oogabooga'],
+          allowed: ['foo']
+        }
+      ],
+      errors: [
+        {
+          line: 1,
+          column: 1,
+          messageId: 'removalReplacement',
+          data: {
+            name: 'oogabooga',
+            description:
+              'This module is disallowed and should be replaced with an alternative.'
+          }
+        }
+      ]
+    },
+    {
+      code: `{
+        "dependencies": {
+          "npm-run-all": "^1.0.0"
+        }
+      }`,
       filename: 'package.json',
-      languageOptions: {parser: jsoncParser},
-      errors: [{messageId: 'documentedReplacement'}]
+      languageOptions: {
+        parser: jsonParser
+      },
+      errors: [
+        {
+          line: 3,
+          column: 11,
+          messageId: 'documentedReplacement',
+          data: {
+            name: 'npm-run-all',
+            replacement: 'npm-run-all2',
+            url: resolveDocUrl({type: 'e18e', id: 'npm-run-all'})
+          }
+        }
+      ]
     }
   ]
 });
 
+// Test using `@eslint/json` plugin
 jsonRuleTester.run('ban-dependencies (JSON)', banDependencies, {
   valid: [
     {
-      filename: 'package.json',
-      code: `{"dependencies": {"typescript": "^5.3.2"}}`
+      code: `{
+        "dependencies": {
+          "unknown-module": "^1.0.0"
+        }
+      }`,
+      filename: 'package.json'
+    },
+    {
+      code: `{
+        "dependencies": {
+          "npm-run-all": "^1.0.0"
+        }
+      }`,
+      filename: 'not-a-package.json'
+    },
+    {
+      code: `{
+        "not-dependencies": {
+          "some-other-nonsense": 123
+        }
+      }`,
+      filename: 'package.json'
     }
   ],
   invalid: [
     {
+      code: `{
+        "dependencies": {
+          "npm-run-all": "^1.0.0"
+        }
+      }`,
       filename: 'package.json',
-      code: `{"dependencies": {"moment": "^1.0.0"}}`,
-      errors: [{messageId: 'documentedReplacement'}]
+      errors: [
+        {
+          line: 3,
+          column: 11,
+          messageId: 'documentedReplacement',
+          data: {
+            name: 'npm-run-all',
+            replacement: 'npm-run-all2',
+            url: resolveDocUrl({type: 'e18e', id: 'npm-run-all'})
+          }
+        }
+      ]
     }
   ]
 });

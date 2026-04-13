@@ -22,7 +22,7 @@ import {preferRegexTest} from './rules/prefer-regex-test.js';
 import {preferArraySome} from './rules/prefer-array-some.js';
 import {preferStaticRegex} from './rules/prefer-static-regex.js';
 import {preferInlineEquality} from './rules/prefer-inline-equality.js';
-import {rules as dependRules} from 'eslint-plugin-depend';
+import {banDependencies} from './rules/ban-dependencies.js';
 
 const plugin: ESLint.Plugin = {
   meta: {
@@ -50,7 +50,7 @@ const plugin: ESLint.Plugin = {
     'prefer-array-some': preferArraySome,
     'prefer-static-regex': preferStaticRegex,
     'prefer-inline-equality': preferInlineEquality as never as Rule.RuleModule,
-    ...dependRules
+    'ban-dependencies': banDependencies
   }
 };
 
