@@ -1,12 +1,25 @@
-import {run, runClassic} from 'eslint-vitest-rule-tester';
+import {RuleTester} from 'eslint';
 import * as tseslintParser from '@typescript-eslint/parser';
 import * as jsonParser from 'jsonc-eslint-parser';
 import eslintJson from '@eslint/json';
+import {resolveDocUrl} from 'module-replacements';
+import {banDependencies} from './ban-dependencies.js';
 
-import {rule} from '../../rules/ban-dependencies.js';
-import {getMdnUrl, getReplacementsDocUrl} from '../../util/rule-meta.js';
+const ruleTester = new RuleTester({
+  languageOptions: {
+    ecmaVersion: 2022,
+    sourceType: 'module'
+  }
+});
+const jsonRuleTester = new RuleTester({
+  files: ['**/*.json'],
+  language: 'json/json',
+  plugins: {
+    json: eslintJson
+  }
+});
 
-await runClassic('ban-dependencies', rule, {
+ruleTester.run('ban-dependencies', banDependencies, {
   valid: [
     'const foo = 303;',
     {
@@ -104,7 +117,8 @@ await runClassic('ban-dependencies', rule, {
           messageId: 'simpleReplacement',
           data: {
             name: 'is-number',
-            replacement: `Use typeof v === "number" || (typeof v === "string" && Number.isFinite(+v))`
+            description:
+              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
           }
         }
       ]
@@ -118,7 +132,8 @@ await runClassic('ban-dependencies', rule, {
           messageId: 'simpleReplacement',
           data: {
             name: 'is-number',
-            replacement: `Use typeof v === "number" || (typeof v === "string" && Number.isFinite(+v))`
+            description:
+              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
           }
         }
       ]
@@ -132,7 +147,8 @@ await runClassic('ban-dependencies', rule, {
           messageId: 'simpleReplacement',
           data: {
             name: 'is-number',
-            replacement: `Use typeof v === "number" || (typeof v === "string" && Number.isFinite(+v))`
+            description:
+              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
           }
         }
       ]
@@ -149,7 +165,8 @@ await runClassic('ban-dependencies', rule, {
           messageId: 'simpleReplacement',
           data: {
             name: 'is-number',
-            replacement: `Use typeof v === "number" || (typeof v === "string" && Number.isFinite(+v))`
+            description:
+              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
           }
         }
       ]
@@ -164,7 +181,10 @@ await runClassic('ban-dependencies', rule, {
           data: {
             name: 'object.entries',
             replacement: 'Object.entries',
-            url: getMdnUrl('Global_Objects/Object/entries')
+            url: resolveDocUrl({
+              type: 'mdn',
+              id: 'Web/JavaScript/Reference/Global_Objects/Object/entries'
+            })
           }
         }
       ]
@@ -178,7 +198,8 @@ await runClassic('ban-dependencies', rule, {
           messageId: 'documentedReplacement',
           data: {
             name: 'npm-run-all',
-            url: getReplacementsDocUrl('npm-run-all')
+            replacement: 'npm-run-all2',
+            url: resolveDocUrl({type: 'e18e', id: 'npm-run-all'})
           }
         }
       ]
@@ -194,9 +215,11 @@ await runClassic('ban-dependencies', rule, {
         {
           line: 1,
           column: 1,
-          messageId: 'noneReplacement',
+          messageId: 'removalReplacement',
           data: {
-            name: 'oogabooga'
+            name: 'oogabooga',
+            description:
+              'This module is disallowed and should be replaced with an alternative.'
           }
         }
       ]
@@ -217,7 +240,10 @@ await runClassic('ban-dependencies', rule, {
           data: {
             name: 'object-is',
             replacement: 'Object.is',
-            url: getMdnUrl('Global_Objects/Object/is')
+            url: resolveDocUrl({
+              type: 'mdn',
+              id: 'Web/JavaScript/Reference/Global_Objects/Object/is'
+            })
           }
         }
       ]
@@ -234,9 +260,11 @@ await runClassic('ban-dependencies', rule, {
         {
           line: 1,
           column: 1,
-          messageId: 'noneReplacement',
+          messageId: 'removalReplacement',
           data: {
-            name: 'oogabooga'
+            name: 'oogabooga',
+            description:
+              'This module is disallowed and should be replaced with an alternative.'
           }
         }
       ]
@@ -258,7 +286,8 @@ await runClassic('ban-dependencies', rule, {
           messageId: 'documentedReplacement',
           data: {
             name: 'npm-run-all',
-            url: getReplacementsDocUrl('npm-run-all')
+            replacement: 'npm-run-all2',
+            url: resolveDocUrl({type: 'e18e', id: 'npm-run-all'})
           }
         }
       ]
@@ -267,18 +296,7 @@ await runClassic('ban-dependencies', rule, {
 });
 
 // Test using `@eslint/json` plugin
-run({
-  name: 'ban-dependencies-json',
-  configs: [
-    {
-      files: ['**/*.json'],
-      language: 'json/json',
-      plugins: {
-        json: eslintJson
-      }
-    }
-  ],
-  rule,
+jsonRuleTester.run('ban-dependencies (JSON)', banDependencies, {
   valid: [
     {
       code: `{
@@ -320,7 +338,8 @@ run({
           messageId: 'documentedReplacement',
           data: {
             name: 'npm-run-all',
-            url: getReplacementsDocUrl('npm-run-all')
+            replacement: 'npm-run-all2',
+            url: resolveDocUrl({type: 'e18e', id: 'npm-run-all'})
           }
         }
       ]

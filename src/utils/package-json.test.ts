@@ -6,7 +6,7 @@ import {
   getNodeConstraint,
   getClosestPackage,
   closestPackageSatisfiesNodeVersion
-} from '../../util/package-json.js';
+} from './package-json.js';
 import {fileURLToPath} from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -43,7 +43,7 @@ describe('getNodeConstraint', () => {
 
 describe('getClosestPackage', () => {
   test('gets closest package.json', async () => {
-    const cwd = path.join(__dirname, '../../../test/fixtures/simple-package');
+    const cwd = path.join(__dirname, '../../test/fixtures/simple-package');
     const packageJson = JSON.parse(
       await readFile(path.join(cwd, 'package.json'), 'utf8')
     );
@@ -59,7 +59,7 @@ describe('getClosestPackage', () => {
 
 describe('closestPackageSatisfiesNodeVersion', () => {
   test('true if package has matching version', () => {
-    const cwd = path.join(__dirname, '../../../test/fixtures/simple-package');
+    const cwd = path.join(__dirname, '../../test/fixtures/simple-package');
     const filename = path.join(cwd, 'foo.js');
     const context = {
       cwd,
@@ -70,7 +70,7 @@ describe('closestPackageSatisfiesNodeVersion', () => {
   });
 
   test('true if package has range above version', () => {
-    const cwd = path.join(__dirname, '../../../test/fixtures/simple-package');
+    const cwd = path.join(__dirname, '../../test/fixtures/simple-package');
     const filename = path.join(cwd, 'foo.js');
     const context = {
       cwd,
@@ -81,7 +81,7 @@ describe('closestPackageSatisfiesNodeVersion', () => {
   });
 
   test('false if package has no matching version', () => {
-    const cwd = path.join(__dirname, '../../../test/fixtures/simple-package');
+    const cwd = path.join(__dirname, '../../test/fixtures/simple-package');
     const filename = path.join(cwd, 'foo.js');
     const context = {
       cwd,
@@ -103,7 +103,7 @@ describe('closestPackageSatisfiesNodeVersion', () => {
   });
 
   test('true if no node constraint', () => {
-    const cwd = path.join(__dirname, '../../../test/fixtures/no-engines');
+    const cwd = path.join(__dirname, '../../test/fixtures/no-engines');
     const filename = path.join(cwd, 'foo.js');
     const context = {
       cwd,

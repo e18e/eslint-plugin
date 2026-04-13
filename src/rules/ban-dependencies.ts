@@ -39,7 +39,7 @@ type ImportListenerCallback = (
  * Creates a rule listener which listens for import/require calls and
  * calls a callback when one is found
  */
-export function createImportListener(
+function createImportListener(
   context: Rule.RuleContext,
   callback: ImportListenerCallback
 ): Rule.RuleListener {
@@ -206,7 +206,7 @@ function replacementListenerCallback(
  * Creates a rule listener for detecting dependencies in a `package.json`
  * file
  */
-export function createPackageJsonListener(
+function createPackageJsonListener(
   context: Rule.RuleContext,
   callback: ImportListenerCallback
 ): Rule.RuleListener {
@@ -255,7 +255,7 @@ export function createPackageJsonListener(
   };
 }
 
-export const rule: Rule.RuleModule = {
+export const banDependencies: Rule.RuleModule = {
   meta: {
     type: 'suggestion',
     docs: {
