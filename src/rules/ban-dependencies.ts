@@ -103,7 +103,7 @@ function replacementListenerCallback(
       data: {
         name: currentMapping.moduleName,
         replacement: replacement.id,
-        url: resolveDocUrl(replacement.url)
+        url: resolveDocUrl(currentMapping.url ?? replacement.url)
       }
     });
   } else if (replacement.type === 'documented') {
@@ -113,7 +113,7 @@ function replacementListenerCallback(
       data: {
         name: currentMapping.moduleName,
         replacement: replacement.replacementModule,
-        url: resolveDocUrl(replacement.url)
+        url: resolveDocUrl(currentMapping.url ?? replacement.url)
       }
     });
   } else if (replacement.type === 'simple') {
