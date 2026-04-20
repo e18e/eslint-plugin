@@ -39,21 +39,21 @@
     "@eslint/json": "^1.2.0",
     "@types/node": "^25.6.0",
     "@types/semver": "^7.7.1",
-    "@typescript-eslint/rule-tester": "^8.58.1",
-    "@typescript-eslint/typescript-estree": "^8.58.1",
+    "@typescript-eslint/rule-tester": "^8.58.2",
+    "@typescript-eslint/typescript-estree": "^8.58.2",
     "@vitest/coverage-v8": "^4.1.4",
-    "eslint": "^10.2.0",
+    "eslint": "^10.2.1",
     "eslint-plugin-eslint-plugin": "^7.3.2",
     "jsonc-eslint-parser": "^3.1.0",
-    "oxlint": "^1.59.0",
-    "prettier": "^3.8.2",
-    "typescript": "^6.0.2",
-    "typescript-eslint": "^8.58.1",
+    "oxlint": "^1.60.0",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.58.2",
     "vitest": "^4.0.14"
   },
   "peerDependencies": {
     "eslint": "^9.0.0 || ^10.0.0",
-    "oxlint": "^1.59.0"
+    "oxlint": "^1.60.0"
   },
   "peerDependenciesMeta": {
     "eslint": {
