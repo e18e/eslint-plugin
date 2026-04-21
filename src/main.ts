@@ -26,8 +26,8 @@ import {banDependencies} from './rules/ban-dependencies.js';
 
 const plugin: ESLint.Plugin = {
   meta: {
-    name: 'e18e',
-    namespace: 'e18e'
+    name: '@e18e/eslint-plugin',
+    namespace: '@e18e'
   },
   rules: {
     'prefer-array-at': preferArrayAt as never as Rule.RuleModule,
