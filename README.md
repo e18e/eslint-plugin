@@ -168,6 +168,7 @@ Read more at the
 | [prefer-regex-test](./src/rules/prefer-regex-test.ts) | Prefer `RegExp.test()` over `String.match()` and `RegExp.exec()` when only checking for match existence | ✅ | ✅ | 🔶 |
 | [prefer-static-regex](./src/rules/prefer-static-regex.ts) | Prefer defining regular expressions at module scope to avoid re-compilation on every function call | ✅ | ✖️ | 🔶 |
 | [prefer-inline-equality](./src/rules/prefer-inline-equality.ts) | Prefer inline equality checks over temporary object creation for simple comparisons | ✖️ | ✅ | 🔶 |
+| [prefer-string-fromcharcode](./src/rules/prefer-string-fromcharcode.ts) | Prefer `String.fromCharCode()` over `String.fromCodePoint()` for code points below `0x10000` | ✅ | ✅ | ✖️ |
 
 ## Sponsors
 
