@@ -6,6 +6,59 @@ export type AnyNode = Node | TSESTree.Node;
 
 type NodeWithParent = (Node & Rule.NodeParentExtension) | TSESTree.Node;
 
+const arrayReturningMethods = new Set([
+  'concat',
+  'copyWithin',
+  'fill',
+  'filter',
+  'flat',
+  'flatMap',
+  'map',
+  'reverse',
+  'slice',
+  'sort',
+  'splice',
+  'split',
+  'toReversed',
+  'toSorted',
+  'toSpliced',
+  'with'
+]);
+
+/**
+ * Checks if an expression is syntactically known to produce an array.
+ * e.g. array literals, Array.from/of, Object.keys/values/entries, and
+ * calls to array-returning methods.
+ */
+export function isSyntacticallyKnownArray(node: AnyNode): boolean {
+  if (node.type === 'ArrayExpression') return true;
+  if (node.type !== 'CallExpression') return false;
+  const callee = node.callee;
+  if (
+    callee.type !== 'MemberExpression' ||
+    callee.property.type !== 'Identifier'
+  ) {
+    return false;
+  }
+  if (
+    callee.object.type === 'Identifier' &&
+    callee.object.name === 'Array' &&
+    (callee.property.name === 'from' || callee.property.name === 'of')
+  ) {
+    return true;
+  }
+  if (
+    callee.object.type === 'Identifier' &&
+    callee.object.name === 'Object' &&
+    (callee.property.name === 'keys' ||
+      callee.property.name === 'values' ||
+      callee.property.name === 'entries')
+  ) {
+    return true;
+  }
+  return arrayReturningMethods.has(callee.property.name);
+}
+
 /**
  * Checks if a node is in a boolean context (where the result is only used as truthy/falsy).
  * e.g. if conditions, while loops, ternary tests, logical operators

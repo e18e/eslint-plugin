@@ -1,5 +1,6 @@
 import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
 import {isArrayType} from '../utils/typescript.js';
+import {isSyntacticallyKnownArray} from '../utils/ast.js';
 
 type MessageIds =
   | 'preferSpreadArray'
@@ -86,10 +87,16 @@ export const preferSpreadSyntax: TSESLint.RuleModule<MessageIds, []> = {
                   parts.push(sourceCode.getText(el));
                 }
               }
-            } else if (isArrayType(arg, context) === true) {
-              parts.push(`...${sourceCode.getText(arg)}`);
             } else {
-              parts.push(sourceCode.getText(arg));
+              const typed = isArrayType(arg, context);
+              if (
+                typed === true ||
+                (typed === undefined && isSyntacticallyKnownArray(arg))
+              ) {
+                parts.push(`...${sourceCode.getText(arg)}`);
+              } else {
+                parts.push(sourceCode.getText(arg));
+              }
             }
           }
 

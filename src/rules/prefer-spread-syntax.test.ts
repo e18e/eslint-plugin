@@ -125,6 +125,27 @@ ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
       ]
     },
 
+    // Array concat with .map() arg
+    {
+      code: 'const result = arr.concat(items.map(x => x));',
+      output: 'const result = [...arr, ...items.map(x => x)];',
+      errors: [{messageId: 'preferSpreadArray'}]
+    },
+
+    // Array concat with Array.from() arg
+    {
+      code: 'const result = arr.concat(Array.from(s, n => n));',
+      output: 'const result = [...arr, ...Array.from(s, n => n)];',
+      errors: [{messageId: 'preferSpreadArray'}]
+    },
+
+    // Array concat with Object.keys() arg
+    {
+      code: 'const result = arr.concat(Object.keys(obj));',
+      output: 'const result = [...arr, ...Object.keys(obj)];',
+      errors: [{messageId: 'preferSpreadArray'}]
+    },
+
     // Array concat chained expression
     {
       code: 'const result = [1, 2].concat([3, 4]);',
