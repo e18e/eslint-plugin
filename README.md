@@ -154,7 +154,7 @@ Read more at the
 
 | Rule | Description | Recommended | Fixable | Requires Types |
 |------|-------------|-------------|---------|----------------|
-| ban-dependencies | Ban dependencies in favor of lighter alternatives | ✅ | ✖️ | ✖️ |
+| [ban-dependencies](./src/rules/ban-dependencies.ts) | Disallow dependencies in favor of more performant or secure alternatives | ✅ | ✖️ | ✖️ |
 
 ### Performance improvements
 
