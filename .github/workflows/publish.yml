@@ -36,6 +36,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
       - run: npm ci --ignore-scripts
+      - run: npm i -g npm@~11.10.0 # Work-around for https://github.com/npm/cli/issues/9151#issuecomment-4131466208
       - run: npm i -g npm@latest
       - run: npm run build
       - run: npm version ${TAG_NAME} --git-tag-version=false
