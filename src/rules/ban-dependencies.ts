@@ -141,7 +141,8 @@ export const banDependencies: Rule.RuleModule = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Bans a list of dependencies from being used'
+      description:
+        'Disallow dependencies in favor of more performant or secure alternatives'
     },
     defaultOptions: [{}],
     schema: [
@@ -149,14 +150,14 @@ export const banDependencies: Rule.RuleModule = {
         type: 'object',
         properties: {
           presets: {
-            description: 'Preset groups of modules to ban',
+            description: 'Preset groups of modules to disallow',
             type: 'array',
             items: {
               type: 'string'
             }
           },
           modules: {
-            description: 'Additional module names to ban',
+            description: 'Additional module names to disallow',
             type: 'array',
             items: {
               type: 'string'
