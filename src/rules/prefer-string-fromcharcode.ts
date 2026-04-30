@@ -3,9 +3,7 @@ import type {CallExpression, Expression, SpreadElement} from 'estree';
 
 const FROM_CHARCODE_LIMIT = 0x10000;
 
-function isFromCharCodeSafeLiteral(
-  node: Expression | SpreadElement
-): boolean {
+function isFromCharCodeSafeLiteral(node: Expression | SpreadElement): boolean {
   return (
     node.type === 'Literal' &&
     typeof node.value === 'number' &&

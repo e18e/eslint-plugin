@@ -52,7 +52,7 @@ const plugin: ESLint.Plugin = {
     'prefer-static-regex': preferStaticRegex,
     'prefer-inline-equality': preferInlineEquality as never as Rule.RuleModule,
     'prefer-string-fromcharcode': preferStringFromCharCode,
-    'ban-dependencies': banDependencies,
+    'ban-dependencies': banDependencies
   }
 };
 
