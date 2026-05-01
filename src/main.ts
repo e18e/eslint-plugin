@@ -23,6 +23,7 @@ import {preferArraySome} from './rules/prefer-array-some.js';
 import {preferStaticRegex} from './rules/prefer-static-regex.js';
 import {preferInlineEquality} from './rules/prefer-inline-equality.js';
 import {banDependencies} from './rules/ban-dependencies.js';
+import {preferIncludesOverRegexTest} from './rules/prefer-includes-over-regex-test.js';
 import {preferStringFromCharCode} from './rules/prefer-string-fromcharcode.js';
 
 const plugin: ESLint.Plugin = {
@@ -52,6 +53,7 @@ const plugin: ESLint.Plugin = {
     'prefer-static-regex': preferStaticRegex,
     'prefer-inline-equality': preferInlineEquality as never as Rule.RuleModule,
     'prefer-string-fromcharcode': preferStringFromCharCode,
+    'prefer-includes-over-regex-test': preferIncludesOverRegexTest,
     'ban-dependencies': banDependencies
   }
 };

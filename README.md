@@ -169,6 +169,7 @@ Read more at the
 | [prefer-static-regex](./src/rules/prefer-static-regex.ts) | Prefer defining regular expressions at module scope to avoid re-compilation on every function call | ✅ | ✖️ | 🔶 |
 | [prefer-inline-equality](./src/rules/prefer-inline-equality.ts) | Prefer inline equality checks over temporary object creation for simple comparisons | ✖️ | ✅ | 🔶 |
 | [prefer-string-fromcharcode](./src/rules/prefer-string-fromcharcode.ts) | Prefer `String.fromCharCode()` over `String.fromCodePoint()` for code points below `0x10000` | ✅ | ✅ | ✖️ |
+| [prefer-includes-over-regex-test](./src/rules/prefer-includes-over-regex-test.ts) | Prefer `s.includes()` / `startsWith` / `endsWith` over `/literal/.test(s)` when the regex has no metacharacters or flags | ✖️ | ✅ | ✖️ |
 
 ## Sponsors
 
