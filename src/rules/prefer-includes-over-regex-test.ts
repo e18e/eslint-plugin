@@ -66,7 +66,7 @@ export const preferIncludesOverRegexTest: Rule.RuleModule = {
     schema: [],
     messages: {
       preferIncludes:
-        "Prefer `s.includes('{{literal}}')` over `/{{pattern}}/.test(s)` — skips the regex engine entirely.",
+        "Prefer `s.includes('{{literal}}')` over `/{{pattern}}/.test(s)`.",
       preferStartsWith:
         "Prefer `s.startsWith('{{literal}}')` over `/^{{literal}}/.test(s)`.",
       preferEndsWith:
