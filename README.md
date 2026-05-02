@@ -170,6 +170,7 @@ Read more at the
 | [prefer-inline-equality](./src/rules/prefer-inline-equality.ts) | Prefer inline equality checks over temporary object creation for simple comparisons | ✖️ | ✅ | 🔶 |
 | [prefer-string-fromcharcode](./src/rules/prefer-string-fromcharcode.ts) | Prefer `String.fromCharCode()` over `String.fromCodePoint()` for code points below `0x10000` | ✅ | ✅ | ✖️ |
 | [prefer-includes-over-regex-test](./src/rules/prefer-includes-over-regex-test.ts) | Prefer `s.includes()` / `startsWith` / `endsWith` over `/literal/.test(s)` when the regex has no metacharacters or flags | ✖️ | ✅ | ✖️ |
+| [no-delete-property](./src/rules/no-delete-property.ts) | Disallow `delete` on properties — V8 deoptimizes the object to dictionary mode | ✖️ | 💡 | ✖️ |
 
 ## Sponsors
 

@@ -24,6 +24,7 @@ import {preferStaticRegex} from './rules/prefer-static-regex.js';
 import {preferInlineEquality} from './rules/prefer-inline-equality.js';
 import {banDependencies} from './rules/ban-dependencies.js';
 import {preferIncludesOverRegexTest} from './rules/prefer-includes-over-regex-test.js';
+import {noDeleteProperty} from './rules/no-delete-property.js';
 import {preferStringFromCharCode} from './rules/prefer-string-fromcharcode.js';
 
 const plugin: ESLint.Plugin = {
@@ -54,6 +55,7 @@ const plugin: ESLint.Plugin = {
     'prefer-inline-equality': preferInlineEquality as never as Rule.RuleModule,
     'prefer-string-fromcharcode': preferStringFromCharCode,
     'prefer-includes-over-regex-test': preferIncludesOverRegexTest,
+    'no-delete-property': noDeleteProperty,
     'ban-dependencies': banDependencies
   }
 };
