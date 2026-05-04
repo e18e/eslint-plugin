@@ -171,6 +171,7 @@ Read more at the
 | [prefer-string-fromcharcode](./src/rules/prefer-string-fromcharcode.ts) | Prefer `String.fromCharCode()` over `String.fromCodePoint()` for code points below `0x10000` | ✅ | ✅ | ✖️ |
 | [prefer-includes-over-regex-test](./src/rules/prefer-includes-over-regex-test.ts) | Prefer `s.includes()` / `startsWith` / `endsWith` over `/literal/.test(s)` when the regex has no metacharacters or flags | ✖️ | ✅ | ✖️ |
 | [no-delete-property](./src/rules/no-delete-property.ts) | Disallow `delete` on properties — V8 deoptimizes the object to dictionary mode | ✖️ | 💡 | ✖️ |
+| [prefer-flatmap-over-map-flat](./src/rules/prefer-flatmap-over-map-flat.ts) | Prefer `Array.prototype.flatMap()` over `.map(fn).flat()` to skip the intermediate array | ✖️ | ✅ | ✖️ |
 
 ## Sponsors
 
