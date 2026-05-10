@@ -18,7 +18,7 @@ function findEnclosingCallback(node: Rule.Node): FunctionExpr | null {
       cur.type === 'ArrowFunctionExpression' ||
       cur.type === 'FunctionExpression'
     ) {
-      return cur as FunctionExpr;
+      return cur;
     }
     if (cur.type === 'FunctionDeclaration') {
       return null;
@@ -43,13 +43,13 @@ export const preferStaticCollator: Rule.RuleModule = {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer hoisting an Intl.Collator over calling localeCompare in a sort callback',
+        'Prefer hoisting an `Intl.Collator` instance over calling localeCompare in a sort callback',
       recommended: false
     },
     schema: [],
     messages: {
       preferStaticCollator:
-        '`localeCompare` constructs an Intl.Collator on every call. In a sort/toSorted callback that happens O(N log N) times. Hoist `const collator = new Intl.Collator(...)` outside the callback and use `collator.compare(a, b)`.'
+        '`localeCompare` constructs an `Intl.Collator` on every call. Hoist `const collator = new Intl.Collator(...)` outside the callback and use `collator.compare(a, b)`.'
     }
   },
   create(context) {
