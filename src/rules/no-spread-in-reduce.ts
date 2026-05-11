@@ -15,12 +15,18 @@ function collectPatternNames(pattern: Pattern, out: Set<string>): void {
     out.add(pattern.name);
   } else if (pattern.type === 'ObjectPattern') {
     for (const prop of pattern.properties) {
-      if (prop.type === 'Property')
-        collectPatternNames(prop.value as Pattern, out);
-      else collectPatternNames(prop.argument, out);
+      if (prop.type === 'Property') {
+        collectPatternNames(prop.value, out);
+      } else {
+        collectPatternNames(prop.argument, out);
+      }
     }
   } else if (pattern.type === 'ArrayPattern') {
-    for (const el of pattern.elements) if (el) collectPatternNames(el, out);
+    for (const el of pattern.elements) {
+      if (el) {
+        collectPatternNames(el, out);
+      }
+    }
   } else if (pattern.type === 'AssignmentPattern') {
     collectPatternNames(pattern.left, out);
   } else if (pattern.type === 'RestElement') {
@@ -61,8 +67,48 @@ function collectAliases(fn: Callback, accNames: Set<string>): void {
   }
 }
 
-// All expressions returned from the callback (skipping nested functions —
-// their returns belong to themselves). Covers conditional branches:
+// Walk `root`, skipping nested function bodies (their contents belong to
+// themselves, not to the enclosing reduce callback). `visit` runs on each
+// node; return `true` to short-circuit the whole traversal, or `'skip'` to
+// stop descending into the current node's children.
+//
+// TODO (jg): maybe one day capture these during ESLint's normal traversal
+function walkSkippingFunctions(
+  root: Node,
+  visitorKeys: Record<string, readonly string[] | undefined>,
+  visit: (node: Node) => boolean | 'skip' | undefined
+): void {
+  let stopped = false;
+  function walk(node: Node): void {
+    if (stopped) return;
+    if (
+      node.type === 'FunctionDeclaration' ||
+      node.type === 'FunctionExpression' ||
+      node.type === 'ArrowFunctionExpression'
+    )
+      return;
+    const result = visit(node);
+    if (result === true) {
+      stopped = true;
+      return;
+    }
+    if (result === 'skip') return;
+    const keys = visitorKeys[node.type];
+    if (!keys) return;
+    for (const key of keys) {
+      const value = (node as unknown as Record<string, unknown>)[key];
+      if (!value) continue;
+      if (Array.isArray(value)) {
+        for (const child of value) if (child) walk(child as Node);
+      } else {
+        walk(value as Node);
+      }
+    }
+  }
+  walk(root);
+}
+
+// All expressions returned from the callback. Covers conditional branches:
 // `if (cond) return [...acc, x]; return acc;` examines both arms.
 function getReturnedExpressions(
   fn: Callback,
@@ -70,75 +116,40 @@ function getReturnedExpressions(
 ): Expression[] {
   if (fn.body.type !== 'BlockStatement') return [fn.body];
   const out: Expression[] = [];
-  function walk(node: Node): void {
-    if (
-      node.type === 'FunctionDeclaration' ||
-      node.type === 'FunctionExpression' ||
-      node.type === 'ArrowFunctionExpression'
-    )
-      return;
+  walkSkippingFunctions(fn.body, visitorKeys, (node) => {
     if (node.type === 'ReturnStatement' && node.argument) {
       out.push(node.argument);
-      return;
+      return 'skip';
     }
-    const keys = visitorKeys[node.type];
-    if (!keys) return;
-    for (const key of keys) {
-      const value = (node as unknown as Record<string, unknown>)[key];
-      if (!value) continue;
-      if (Array.isArray(value)) {
-        for (const child of value) if (child) walk(child as Node);
-      } else {
-        walk(value as Node);
-      }
-    }
-  }
-  walk(fn.body);
+    return undefined;
+  });
   return out;
 }
 
 // Find the first SpreadElement whose argument is an accumulator-bound
-// identifier, anywhere inside the returned expression (skipping nested
-// functions). Position within an array/object literal doesn't matter for
-// the perf cost — `[x, ...acc]` and `[...acc, x]` both copy all N entries
-// each iteration. Walking past the top level also catches the destructure
-// pattern `({list: [...list, x]})`, where the spread sits inside a
-// rebuilt accumulator shape.
+// identifier, anywhere inside the returned expression. Position within an
+// array/object literal doesn't matter for the perf cost — `[x, ...acc]`
+// and `[...acc, x]` both copy all N entries each iteration. Walking past
+// the top level also catches the destructure pattern
+// `({list: [...list, x]})`, where the spread sits inside a rebuilt
+// accumulator shape.
 function findAccumulatorSpread(
   expr: Expression,
   accNames: Set<string>,
   visitorKeys: Record<string, readonly string[] | undefined>
 ): Node | null {
   let found: Node | null = null;
-  function walk(node: Node): void {
-    if (found) return;
-    if (
-      node.type === 'FunctionDeclaration' ||
-      node.type === 'FunctionExpression' ||
-      node.type === 'ArrowFunctionExpression'
-    )
-      return;
+  walkSkippingFunctions(expr, visitorKeys, (node) => {
     if (
       node.type === 'SpreadElement' &&
       node.argument.type === 'Identifier' &&
       accNames.has(node.argument.name)
     ) {
       found = node;
-      return;
+      return true;
     }
-    const keys = visitorKeys[node.type];
-    if (!keys) return;
-    for (const key of keys) {
-      const value = (node as unknown as Record<string, unknown>)[key];
-      if (!value) continue;
-      if (Array.isArray(value)) {
-        for (const child of value) if (child) walk(child as Node);
-      } else {
-        walk(value as Node);
-      }
-    }
-  }
-  walk(expr);
+    return undefined;
+  });
   return found;
 }
 
