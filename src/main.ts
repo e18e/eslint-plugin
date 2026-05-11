@@ -26,6 +26,7 @@ import {banDependencies} from './rules/ban-dependencies.js';
 import {preferIncludesOverRegexTest} from './rules/prefer-includes-over-regex-test.js';
 import {noDeleteProperty} from './rules/no-delete-property.js';
 import {preferStringFromCharCode} from './rules/prefer-string-fromcharcode.js';
+import {noSpreadInReduce} from './rules/no-spread-in-reduce.js';
 import {preferStaticCollator} from './rules/prefer-static-collator.js';
 
 const plugin: ESLint.Plugin = {
@@ -57,6 +58,7 @@ const plugin: ESLint.Plugin = {
     'prefer-string-fromcharcode': preferStringFromCharCode,
     'prefer-includes-over-regex-test': preferIncludesOverRegexTest,
     'no-delete-property': noDeleteProperty,
+    'no-spread-in-reduce': noSpreadInReduce,
     'prefer-static-collator': preferStaticCollator,
     'ban-dependencies': banDependencies
   }
