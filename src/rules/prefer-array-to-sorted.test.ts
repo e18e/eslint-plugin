@@ -25,6 +25,14 @@ const ruleTester = new RuleTester({
     sourceType: 'module'
   }
 });
+const tsSyntaxRuleTester = new TSRuleTester({
+  languageOptions: {
+    parserOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module'
+    }
+  }
+});
 
 ruleTester.run(
   'prefer-array-to-sorted (untyped)',
@@ -40,7 +48,17 @@ ruleTester.run(
 
       // slice with different arguments
       'arr.slice(1).sort();',
-      'arr.slice(0, 5).sort();'
+      'arr.slice(0, 5).sort();',
+
+      'const sorted = [...new Set([1, 2, 3])].sort();',
+      'const sorted = [...new Set(arr)].sort();',
+      'const sorted = [...new Map()].sort();',
+      'const foundVersions = new Set(); const sorted = [...foundVersions].sort();',
+      'let foundVersions = new Set(); const sorted = [...foundVersions].sort();',
+      'const entries = new Map(); const sorted = [...entries].sort();',
+      'const sorted = [...items.entries()].sort();',
+      'const sorted = [...items.keys()].sort();',
+      'const sorted = [...items.values()].sort();'
     ],
 
     invalid: [
@@ -174,6 +192,12 @@ ruleTester.run(
           }
         ]
       },
+      {
+        code: 'const sorted = [...Object.entries(counts)].sort(([a], [b]) => a.localeCompare(b));',
+        output:
+          'const sorted = Object.entries(counts).toSorted(([a], [b]) => a.localeCompare(b));',
+        errors: [{messageId: 'preferToSorted'}]
+      },
 
       // Multiple arguments (edge case - sort() typically takes 0 or 1 arg)
       {
@@ -239,6 +263,26 @@ ruleTester.run(
             column: 16
           }
         ]
+      }
+    ]
+  }
+);
+
+tsSyntaxRuleTester.run(
+  'prefer-array-to-sorted (typescript syntax)',
+  preferArrayToSorted,
+  {
+    valid: [
+      'function sortItems<T>(items: Iterable<T>) { return [...items].sort(); }',
+      'function sortItems(items: Map<string, number>) { return [...items.entries()].sort(); }',
+      'const items: Set<string> = new Set(); const sorted = [...items].sort();',
+      'let items: Iterable<string>; const sorted = [...items].sort();'
+    ],
+    invalid: [
+      {
+        code: 'const items: string[] = []; const sorted = [...items].sort();',
+        output: 'const items: string[] = []; const sorted = items.toSorted();',
+        errors: [{messageId: 'preferToSorted'}]
       }
     ]
   }
