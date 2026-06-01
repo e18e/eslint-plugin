@@ -36,24 +36,24 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@eslint/json": "^1.2.0",
+    "@eslint/json": "^2.0.0",
     "@types/node": "^25.9.1",
     "@types/semver": "^7.7.1",
-    "@typescript-eslint/rule-tester": "^8.59.4",
-    "@typescript-eslint/typescript-estree": "^8.59.4",
-    "@vitest/coverage-v8": "^4.1.7",
-    "eslint": "^10.4.0",
+    "@typescript-eslint/rule-tester": "^8.60.0",
+    "@typescript-eslint/typescript-estree": "^8.60.0",
+    "@vitest/coverage-v8": "^4.1.8",
+    "eslint": "^10.4.1",
     "eslint-plugin-eslint-plugin": "^7.3.3",
     "jsonc-eslint-parser": "^3.1.0",
-    "oxlint": "^1.66.0",
+    "oxlint": "^1.67.0",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.4",
+    "typescript-eslint": "^8.60.0",
     "vitest": "^4.0.14"
   },
   "peerDependencies": {
     "eslint": "^9.0.0 || ^10.0.0",
-    "oxlint": "^1.66.0"
+    "oxlint": "^1.67.0"
   },
   "peerDependenciesMeta": {
     "eslint": {
