@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "empathic": "^2.0.1",
-    "module-replacements": "^3.0.0-beta.7",
-    "semver": "^7.8.1"
+    "module-replacements": "^3.0.0-beta.8",
+    "semver": "^7.8.2"
   }
 }
