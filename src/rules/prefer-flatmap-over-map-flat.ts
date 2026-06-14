@@ -1,11 +1,11 @@
 import type {Rule} from 'eslint';
-import type {CallExpression} from 'estree';
+import type {CallExpression, MemberExpression} from 'estree';
 
 function isMemberCall(
   node: CallExpression,
   name: string
 ): node is CallExpression & {
-  callee: CallExpression['callee'] & {type: 'MemberExpression'};
+  callee: MemberExpression;
 } {
   return (
     node.callee.type === 'MemberExpression' &&

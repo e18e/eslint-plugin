@@ -87,7 +87,7 @@ ruleTester.run('prefer-flatmap-over-map-flat', preferFlatMapOverMapFlat, {
       output: 'arr?.flatMap(fn);',
       errors: [{messageId: 'preferFlatMap'}]
     },
-    // parenthesized inner map call — fixer must not break the closing paren
+    // parenthesized inner map call - fixer must not break the closing paren
     {
       code: '(arr.map(fn)).flat();',
       output: '(arr.flatMap(fn));',
