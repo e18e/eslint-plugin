@@ -162,7 +162,7 @@ Read more at the
 |------|-------------|-------------|---------|----------------|
 | [no-indexof-equality](./src/rules/no-indexof-equality.ts) | Prefer `startsWith()` for strings and direct array access over `indexOf()` equality checks | ✖️ | ✅ | ✅ |
 | [prefer-array-from-map](./src/rules/prefer-array-from-map.ts) | Prefer `Array.from(iterable, mapper)` over `[...iterable].map(mapper)` to avoid intermediate array allocation | ✅ | ✅ | ✖️ |
-| [prefer-array-some](./src/rules/prefer-array-some.ts) | Prefer `Array.some()` over `Array.find()` when checking for element existence | ✅ | ✅ | ✖️ |
+| [prefer-array-some](./src/rules/prefer-array-some.ts) | Prefer `Array.some()` over `Array.find()` and `Array.filter().length` checks when checking for element existence | ✅ | ✅ | ✖️ |
 | [prefer-timer-args](./src/rules/prefer-timer-args.ts) | Prefer passing function and arguments directly to `setTimeout`/`setInterval` instead of wrapping in an arrow function or using `bind` | ✅ | ✅ | ✖️ |
 | [prefer-date-now](./src/rules/prefer-date-now.ts) | Prefer `Date.now()` over `new Date().getTime()` and `+new Date()` | ✅ | ✅ | ✖️ |
 | [prefer-regex-test](./src/rules/prefer-regex-test.ts) | Prefer `RegExp.test()` over `String.match()` and `RegExp.exec()` when only checking for match existence | ✅ | ✅ | 🔶 |
@@ -172,6 +172,8 @@ Read more at the
 | [prefer-includes-over-regex-test](./src/rules/prefer-includes-over-regex-test.ts) | Prefer `s.includes()` / `startsWith` / `endsWith` over `/literal/.test(s)` when the regex has no metacharacters or flags | ✖️ | ✅ | ✖️ |
 | [no-delete-property](./src/rules/no-delete-property.ts) | Disallow `delete` on properties — V8 deoptimizes the object to dictionary mode | ✖️ | 💡 | ✖️ |
 | [prefer-flatmap-over-map-flat](./src/rules/prefer-flatmap-over-map-flat.ts) | Prefer `Array.prototype.flatMap()` over `.map(fn).flat()` to skip the intermediate array | ✖️ | ✅ | ✖️ |
+| [no-spread-in-reduce](./src/rules/no-spread-in-reduce.ts) | Disallow spreading the accumulator inside a `.reduce()` callback — it's O(N²) | ✖️ | ✖️ | ✖️ |
+| [prefer-static-collator](./src/rules/prefer-static-collator.ts) | Prefer hoisting an `Intl.Collator` over calling `localeCompare` inside a `sort`/`toSorted` callback | ✖️ | ✖️ | ✖️ |
 
 ## Sponsors
 

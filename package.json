@@ -36,24 +36,24 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@eslint/json": "^1.2.0",
-    "@types/node": "^25.6.0",
+    "@eslint/json": "^2.0.0",
+    "@types/node": "^25.9.2",
     "@types/semver": "^7.7.1",
-    "@typescript-eslint/rule-tester": "^8.59.0",
-    "@typescript-eslint/typescript-estree": "^8.59.0",
-    "@vitest/coverage-v8": "^4.1.5",
-    "eslint": "^10.2.1",
-    "eslint-plugin-eslint-plugin": "^7.3.2",
+    "@typescript-eslint/rule-tester": "^8.60.1",
+    "@typescript-eslint/typescript-estree": "^8.60.1",
+    "@vitest/coverage-v8": "^4.1.8",
+    "eslint": "^10.4.1",
+    "eslint-plugin-eslint-plugin": "^7.4.0",
     "jsonc-eslint-parser": "^3.1.0",
-    "oxlint": "^1.61.0",
+    "oxlint": "^1.68.0",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.0",
+    "typescript-eslint": "^8.60.1",
     "vitest": "^4.0.14"
   },
   "peerDependencies": {
     "eslint": "^9.0.0 || ^10.0.0",
-    "oxlint": "^1.61.0"
+    "oxlint": "^1.68.0"
   },
   "peerDependenciesMeta": {
     "eslint": {
@@ -64,8 +64,8 @@
     }
   },
   "dependencies": {
-    "empathic": "^2.0.0",
-    "module-replacements": "^3.0.0-beta.7",
-    "semver": "^7.7.4"
+    "empathic": "^2.0.1",
+    "module-replacements": "^3.0.0-beta.8",
+    "semver": "^7.8.2"
   }
 }
