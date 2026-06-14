@@ -149,6 +149,7 @@ Read more at the
 | [prefer-object-has-own](./src/rules/prefer-object-has-own.ts) | Prefer `Object.hasOwn()` over `Object.prototype.hasOwnProperty.call()` and `obj.hasOwnProperty()` | ✅ | ✅ | ✖️ |
 | [prefer-spread-syntax](./src/rules/prefer-spread-syntax.ts) | Prefer spread syntax over `Array.concat()`, `Array.from()`, `Object.assign({}, ...)`, and `Function.apply()` | ✅ | ✅ | 🔶 |
 | [prefer-url-canparse](./src/rules/prefer-url-canparse.ts) | Prefer `URL.canParse()` over try-catch blocks for URL validation | ✅ | 💡 | ✖️ |
+| [prefer-get-or-insert](./src/rules/prefer-get-or-insert.ts) | Prefer `Map.prototype.getOrInsert()` over reading a map entry with a default and writing it back | ✖️ | ✅ | ✖️ |
 
 ### Module replacements
 
