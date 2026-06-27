@@ -173,6 +173,7 @@ Read more at the
 | [prefer-includes-over-regex-test](./src/rules/prefer-includes-over-regex-test.ts) | Prefer `s.includes()` / `startsWith` / `endsWith` over `/literal/.test(s)` when the regex has no metacharacters or flags | ✖️ | ✅ | ✖️ |
 | [no-delete-property](./src/rules/no-delete-property.ts) | Disallow `delete` on properties — V8 deoptimizes the object to dictionary mode | ✖️ | 💡 | ✖️ |
 | [prefer-flatmap-over-map-flat](./src/rules/prefer-flatmap-over-map-flat.ts) | Prefer `Array.prototype.flatMap()` over `.map(fn).flat()` to skip the intermediate array | ✖️ | ✅ | ✖️ |
+| [prefer-slice-over-split-index](./src/rules/prefer-slice-over-split-index.ts) | Prefer `indexOf()` and `slice()` over `split()[0]`/`split()[1]` when only one piece is needed | ✖️ | ✖️ | ✖️ |
 | [no-spread-in-reduce](./src/rules/no-spread-in-reduce.ts) | Disallow spreading the accumulator inside a `.reduce()` callback — it's O(N²) | ✖️ | ✖️ | ✖️ |
 | [prefer-static-collator](./src/rules/prefer-static-collator.ts) | Prefer hoisting an `Intl.Collator` over calling `localeCompare` inside a `sort`/`toSorted` callback | ✖️ | ✖️ | ✖️ |
 
