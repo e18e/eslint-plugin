@@ -39,6 +39,13 @@ ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
     'Buffer.concat([buf1, buf2]);',
     'Buffer.concat(buffers);',
 
+    "'a'.concat('b');",
+    '`hello`.concat(` world`);',
+    'const stringWithConcat = "StringWithSubstring".substring(1, 5).concat("test");',
+    'String(value).concat(suffix);',
+    'JSON.stringify(value).concat("\\n");',
+    'arr.join(",").concat(suffix);',
+
     // Array.from with mapper function (should keep as-is)
     'Array.from(iterable, x => x * 2);',
     'Array.from(arr, mapper);',
@@ -143,6 +150,12 @@ ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
     {
       code: 'const result = arr.concat(Object.keys(obj));',
       output: 'const result = [...arr, ...Object.keys(obj)];',
+      errors: [{messageId: 'preferSpreadArray'}]
+    },
+
+    {
+      code: 'const result = Object.keys(obj).concat(other);',
+      output: 'const result = [...Object.keys(obj), other];',
       errors: [{messageId: 'preferSpreadArray'}]
     },
 

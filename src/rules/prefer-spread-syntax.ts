@@ -15,6 +15,82 @@ function isNullOrUndefined(node: TSESTree.Expression): boolean {
   return node.type === 'Identifier' && node.name === 'undefined';
 }
 
+const nonArrayReturningMethods = new Set([
+  'charAt',
+  'charCodeAt',
+  'codePointAt',
+  'endsWith',
+  'includes',
+  'indexOf',
+  'join',
+  'lastIndexOf',
+  'localeCompare',
+  'normalize',
+  'padEnd',
+  'padStart',
+  'repeat',
+  'replace',
+  'replaceAll',
+  'startsWith',
+  'substring',
+  'toExponential',
+  'toFixed',
+  'toLocaleLowerCase',
+  'toLocaleString',
+  'toLocaleUpperCase',
+  'toLowerCase',
+  'toPrecision',
+  'toString',
+  'toUpperCase',
+  'trim',
+  'trimEnd',
+  'trimStart'
+]);
+const primitiveCoercionFunctions = new Set([
+  'BigInt',
+  'Boolean',
+  'Number',
+  'String'
+]);
+
+function isKnownNonArrayConcatReceiver(node: TSESTree.Node): boolean {
+  switch (node.type) {
+    case 'Literal':
+    case 'ObjectExpression':
+    case 'TemplateLiteral':
+      return true;
+  }
+
+  if (node.type !== 'CallExpression') {
+    return false;
+  }
+
+  const {callee} = node;
+  if (
+    callee.type === 'Identifier' &&
+    primitiveCoercionFunctions.has(callee.name)
+  ) {
+    return true;
+  }
+
+  if (
+    callee.type !== 'MemberExpression' ||
+    callee.property.type !== 'Identifier'
+  ) {
+    return false;
+  }
+
+  if (
+    callee.object.type === 'Identifier' &&
+    callee.object.name === 'JSON' &&
+    callee.property.name === 'stringify'
+  ) {
+    return true;
+  }
+
+  return nonArrayReturningMethods.has(callee.property.name);
+}
+
 export const preferSpreadSyntax: TSESLint.RuleModule<MessageIds, []> = {
   meta: {
     type: 'suggestion',
@@ -59,15 +135,19 @@ export const preferSpreadSyntax: TSESLint.RuleModule<MessageIds, []> = {
             node.callee.object.name === 'Buffer'
           )
         ) {
-          // If type info is available, only flag when the receiver is an array
-          if (isArrayType(node.callee.object, context) === false) {
+          const receiver = node.callee.object;
+          const receiverArrayType = isArrayType(receiver, context);
+          if (
+            receiverArrayType === false ||
+            (receiverArrayType !== true &&
+              isKnownNonArrayConcatReceiver(receiver))
+          ) {
             return;
           }
 
           const parts: string[] = [];
 
           // For array literals, inline elements; otherwise spread
-          const receiver = node.callee.object;
           if (receiver.type === 'ArrayExpression') {
             for (const el of receiver.elements) {
               if (el) {
