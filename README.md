@@ -171,6 +171,7 @@ Read more at the
 | [prefer-inline-equality](./src/rules/prefer-inline-equality.ts) | Prefer inline equality checks over temporary object creation for simple comparisons | ✖️ | ✅ | 🔶 |
 | [prefer-string-fromcharcode](./src/rules/prefer-string-fromcharcode.ts) | Prefer `String.fromCharCode()` over `String.fromCodePoint()` for code points below `0x10000` | ✅ | ✅ | ✖️ |
 | [prefer-includes-over-regex-test](./src/rules/prefer-includes-over-regex-test.ts) | Prefer `s.includes()` / `startsWith` / `endsWith` over `/literal/.test(s)` when the regex has no metacharacters or flags | ✖️ | ✅ | ✖️ |
+| [prefer-charcode-at-in-loop](./src/rules/prefer-charcode-at-in-loop.ts) | Prefer `charCodeAt()` over indexed string access for single-character comparisons inside loops | ✖️ | 💡 | 🔶 |
 | [no-delete-property](./src/rules/no-delete-property.ts) | Disallow `delete` on properties — V8 deoptimizes the object to dictionary mode | ✖️ | 💡 | ✖️ |
 | [prefer-flatmap-over-map-flat](./src/rules/prefer-flatmap-over-map-flat.ts) | Prefer `Array.prototype.flatMap()` over `.map(fn).flat()` to skip the intermediate array | ✖️ | ✅ | ✖️ |
 | [no-spread-in-reduce](./src/rules/no-spread-in-reduce.ts) | Disallow spreading the accumulator inside a `.reduce()` callback — it's O(N²) | ✖️ | ✖️ | ✖️ |

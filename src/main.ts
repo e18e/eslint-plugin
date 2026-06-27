@@ -30,6 +30,7 @@ import {noSpreadInReduce} from './rules/no-spread-in-reduce.js';
 import {preferFlatMapOverMapFlat} from './rules/prefer-flatmap-over-map-flat.js';
 import {preferStaticCollator} from './rules/prefer-static-collator.js';
 import {preferGetOrInsert} from './rules/prefer-get-or-insert.js';
+import {preferCharCodeAtInLoop} from './rules/prefer-charcode-at-in-loop.js';
 
 const plugin: ESLint.Plugin = {
   meta: {
@@ -64,6 +65,8 @@ const plugin: ESLint.Plugin = {
     'prefer-flatmap-over-map-flat': preferFlatMapOverMapFlat,
     'prefer-static-collator': preferStaticCollator,
     'prefer-get-or-insert': preferGetOrInsert,
+    'prefer-charcode-at-in-loop':
+      preferCharCodeAtInLoop as never as Rule.RuleModule,
     'ban-dependencies': banDependencies
   }
 };
