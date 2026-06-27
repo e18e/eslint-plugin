@@ -22,10 +22,6 @@ const NON_ARRAY_COPY_SOURCE_TYPES = new Set([
 ]);
 const ITERATOR_RETURNING_METHODS = new Set(['entries', 'keys', 'values']);
 
-type NodeWithTypeAnnotation = TSESTree.Node & {
-  typeAnnotation?: TSESTree.TSTypeAnnotation;
-};
-
 function getTypeReferenceName(node: TSESTree.Node): string | null {
   if (node.type !== 'TSTypeReference') {
     return null;
@@ -41,19 +37,17 @@ function getTypeReferenceName(node: TSESTree.Node): string | null {
   return null;
 }
 
-function hasKnownNonArrayTypeAnnotation(node: TSESTree.Node): boolean {
-  const typeAnnotation = (node as NodeWithTypeAnnotation).typeAnnotation;
-  if (typeAnnotation?.type !== 'TSTypeAnnotation') {
+function hasKnownNonArrayTypeAnnotation(node: TSESTree.BindingName): boolean {
+  const typeAnnotation = node.typeAnnotation;
+  if (typeAnnotation === undefined) {
     return false;
   }
 
   const annotation = typeAnnotation.typeAnnotation;
   if (annotation.type === 'TSUnionType') {
-    return annotation.types.some((typeNode) =>
-      hasKnownNonArrayType(typeNode as TSESTree.Node)
-    );
+    return annotation.types.some((typeNode) => hasKnownNonArrayType(typeNode));
   }
-  return hasKnownNonArrayType(annotation as TSESTree.Node);
+  return hasKnownNonArrayType(annotation);
 }
 
 function hasKnownNonArrayType(node: TSESTree.Node): boolean {
@@ -108,7 +102,7 @@ function resolvesToKnownNonArrayCopySource(
     return false;
   }
 
-  if (hasKnownNonArrayTypeAnnotation(def.name as TSESTree.Node)) {
+  if (hasKnownNonArrayTypeAnnotation(def.name)) {
     return true;
   }
 
