@@ -111,9 +111,6 @@ function resolvesToKnownNonArrayCopySource(
   }
 
   const init = def.node.init;
-  if (hasKnownNonArrayTypeAnnotation(def.node.id)) {
-    return true;
-  }
 
   return (
     init !== null &&
