@@ -92,6 +92,26 @@ ruleTester.run('prefer-flatmap-over-map-flat', preferFlatMapOverMapFlat, {
       code: '(arr.map(fn)).flat();',
       output: '(arr.flatMap(fn));',
       errors: [{messageId: 'preferFlatMap'}]
+    },
+    {
+      code: 'group\n  .map(d => d.refs)\n  .flat()\n  .filter(x);',
+      output: 'group\n  .flatMap(d => d.refs)\n  .filter(x);',
+      errors: [{messageId: 'preferFlatMap'}]
+    },
+    {
+      code: 'standards\n  .map(fn)\n  .flat();',
+      output: 'standards\n  .flatMap(fn);',
+      errors: [{messageId: 'preferFlatMap'}]
+    },
+    {
+      code: 'arr\n  .map(fn)\n  // keep me\n  .flat();',
+      output: 'arr\n  .flatMap(fn)\n  // keep me\n  ;',
+      errors: [{messageId: 'preferFlatMap'}]
+    },
+    {
+      code: '(arr.map(fn))\n  .flat();',
+      output: '(arr.flatMap(fn));',
+      errors: [{messageId: 'preferFlatMap'}]
     }
   ]
 });
