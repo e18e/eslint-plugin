@@ -1,7 +1,6 @@
 import type {
   CallExpression,
   Expression,
-  Literal,
   MemberExpression,
   SpreadElement
 } from 'estree';
@@ -24,7 +23,7 @@ function isSupportedLimit(
 ): boolean {
   if (!limit) return true;
   if (limit.type !== 'Literal') return false;
-  const {value} = limit as Literal;
+  const {value} = limit;
   return typeof value === 'number' && Number.isInteger(value) && value > index;
 }
 
@@ -48,15 +47,15 @@ export const preferSliceOverSplitIndex: Rule.RuleModule = {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer indexOf and slice over split()[N] when only the first or second piece is needed',
+        'Prefer `indexOf(needle)` and `slice(...)` over `split()[N]` when splitting a string into two pieces.',
       recommended: false
     },
     schema: [],
     messages: {
       preferSliceFirst:
-        'Prefer indexOf()+slice() over split(separator)[0] for string separators; split allocates an intermediate array. Preserve the missing-separator fallback explicitly.',
+        'Prefer `indexOf(needle)` and `slice(0, index)` over `split(needle)[0]` for string separators. `split` will allocate an intermediate array, resulting in poorer performance. Preserve the missing-separator fallback explicitly.',
       preferSliceSecond:
-        'Prefer indexOf()+slice() over split(separator)[1] for string separators; split allocates an intermediate array. Preserve missing and repeated-separator behavior explicitly.'
+        'Prefer `indexOf(needle)` and `slice(index)` over `split(needle)[1]` for string separators. `split` will allocate an intermediate array, resulting in poorer performance. Preserve the missing-separator fallback explicitly.'
     }
   },
   create(context) {

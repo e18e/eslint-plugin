@@ -174,7 +174,7 @@ Read more at the
 | [prefer-charcode-at-in-loop](./src/rules/prefer-charcode-at-in-loop.ts) | Prefer `charCodeAt()` over indexed string access for single-character comparisons inside loops | ✖️ | 💡 | 🔶 |
 | [no-delete-property](./src/rules/no-delete-property.ts) | Disallow `delete` on properties — V8 deoptimizes the object to dictionary mode | ✖️ | 💡 | ✖️ |
 | [prefer-flatmap-over-map-flat](./src/rules/prefer-flatmap-over-map-flat.ts) | Prefer `Array.prototype.flatMap()` over `.map(fn).flat()` to skip the intermediate array | ✖️ | ✅ | ✖️ |
-| [prefer-slice-over-split-index](./src/rules/prefer-slice-over-split-index.ts) | Prefer `indexOf()` and `slice()` over `split()[0]`/`split()[1]` when only one piece is needed | ✖️ | ✖️ | ✖️ |
+| [prefer-slice-over-split-index](./src/rules/prefer-slice-over-split-index.ts) | Prefer `indexOf(needle)` and `slice(...)` over `split()[N]` when splitting a string into two pieces | ✖️ | ✖️ | ✖️ |
 | [no-spread-in-reduce](./src/rules/no-spread-in-reduce.ts) | Disallow spreading the accumulator inside a `.reduce()` callback — it's O(N²) | ✖️ | ✖️ | ✖️ |
 | [prefer-static-collator](./src/rules/prefer-static-collator.ts) | Prefer hoisting an `Intl.Collator` over calling `localeCompare` inside a `sort`/`toSorted` callback | ✖️ | ✖️ | ✖️ |
 
