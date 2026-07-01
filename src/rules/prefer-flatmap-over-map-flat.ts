@@ -64,9 +64,20 @@ export const preferFlatMapOverMapFlat: Rule.RuleModule = {
             const mapProperty = inner.callee.property;
             const dotToken = sourceCode.getTokenBefore(node.callee.property);
             if (!dotToken) return null;
+            const previousToken = sourceCode.getTokenBefore(dotToken);
+            const gap = previousToken
+              ? sourceCode.text.slice(
+                  previousToken.range![1],
+                  dotToken.range![0]
+                )
+              : '';
+            const removeStart =
+              previousToken && gap.includes('\n') && gap.trim() === ''
+                ? previousToken.range![1]
+                : dotToken.range![0];
             return [
               fixer.replaceText(mapProperty, 'flatMap'),
-              fixer.removeRange([dotToken.range![0], node.range![1]])
+              fixer.removeRange([removeStart, node.range![1]])
             ];
           }
         });
