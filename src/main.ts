@@ -32,6 +32,7 @@ import {preferStaticCollator} from './rules/prefer-static-collator.js';
 import {preferGetOrInsert} from './rules/prefer-get-or-insert.js';
 import {preferCharCodeAtInLoop} from './rules/prefer-charcode-at-in-loop.js';
 import {preferSliceOverSplitIndex} from './rules/prefer-slice-over-split-index.js';
+import {preferThrowIfNoEntry} from './rules/prefer-throw-if-no-entry.js';
 
 const plugin: ESLint.Plugin = {
   meta: {
@@ -69,6 +70,7 @@ const plugin: ESLint.Plugin = {
     'prefer-charcode-at-in-loop':
       preferCharCodeAtInLoop as never as Rule.RuleModule,
     'prefer-slice-over-split-index': preferSliceOverSplitIndex,
+    'prefer-throw-if-no-entry': preferThrowIfNoEntry,
     'ban-dependencies': banDependencies
   }
 };
