@@ -121,14 +121,14 @@ export const preferThrowIfNoEntry: Rule.RuleModule = {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer `{throwIfNoEntry: false}` over catching missing fs entries from sync stat calls',
+        'Prefer `{throwIfNoEntry: false}` over relying on a thrown error for missing fs entries from sync stat calls',
       recommended: false
     },
     hasSuggestions: true,
     schema: [],
     messages: {
       preferThrowIfNoEntry:
-        'Use { throwIfNoEntry: false } and check the return value instead of catching missing fs entries. Creating Error stack traces is expensive.',
+        'Pass { throwIfNoEntry: false } and check the return value for missing entries, keeping the try/catch for real errors like EACCES. Throwing on the common not-found path builds an expensive Error stack trace.',
       addThrowIfNoEntryOption:
         'Pass { throwIfNoEntry: false } so the call returns undefined instead of throwing.'
     }

@@ -33,6 +33,22 @@ ruleTester.run('prefer-throw-if-no-entry', preferThrowIfNoEntry, {
 
   invalid: [
     {
+      code: 'function isDir(p) { try { return statSync(p)?.isDirectory() ?? false; } catch { return false; } }',
+      output: null,
+      errors: [
+        {
+          messageId: 'preferThrowIfNoEntry',
+          suggestions: [
+            {
+              messageId: 'addThrowIfNoEntryOption',
+              output:
+                'function isDir(p) { try { return statSync(p, {throwIfNoEntry: false})?.isDirectory() ?? false; } catch { return false; } }'
+            }
+          ]
+        }
+      ]
+    },
+    {
       code: 'try { statSync(p); } catch {}',
       output: null,
       errors: [
