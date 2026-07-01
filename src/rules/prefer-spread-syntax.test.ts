@@ -69,7 +69,10 @@ ruleTester.run('prefer-spread-syntax (untyped)', preferSpreadSyntax as never, {
     'obj.method.apply(obj, args);',
 
     // apply with only one argument
-    'fn.apply(null);'
+    'fn.apply(null);',
+
+    // stringify methods from an array or string so no Array is operated anymore
+    'const stringWithConcat = "StringWithSubstring".substring(1, 5).concat("test");'
   ],
 
   invalid: [
