@@ -58,7 +58,7 @@ If you're using oxlint, you can enable the e18e plugin by adding it to your `.ox
 {
   "jsPlugins": ["@e18e/eslint-plugin"],
   "rules": {
-    "e18e/prefer-includes": "error"
+    "@e18e/prefer-includes": "error"
   }
 }
 ```
