@@ -39,7 +39,7 @@ function getTypeReferenceName(node: TSESTree.Node): string | null {
 
 function hasKnownNonArrayTypeAnnotation(node: TSESTree.BindingName): boolean {
   const typeAnnotation = node.typeAnnotation;
-  if (typeAnnotation === undefined) {
+  if (!typeAnnotation) {
     return false;
   }
 

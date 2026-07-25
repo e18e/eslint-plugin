@@ -60,4 +60,25 @@ describe('oxlint integration', () => {
 
     expect(output).not.toContain('e18e/prefer-includes');
   });
+
+  it('should run prefer-array-to-sorted without crashing', () => {
+    const invalidFile = join(
+      process.cwd(),
+      'test/fixtures/oxlint/prefer-array-to-sorted.js'
+    );
+
+    try {
+      execSync(`npx oxlint -c "${configPath}" "${invalidFile}"`, {
+        encoding: 'utf-8',
+        cwd: process.cwd()
+      });
+
+      expect.fail('Expected oxlint to report a violation');
+    } catch (error) {
+      const errorObj = error as {stdout: string; stderr: string};
+      const output = errorObj.stdout + errorObj.stderr;
+      expect(output).toContain('e18e(prefer-array-to-sorted)');
+      expect(output).not.toContain('Error running JS plugin');
+    }
+  });
 });
