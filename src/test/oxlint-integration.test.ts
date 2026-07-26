@@ -1,27 +1,67 @@
 import {describe, it, expect, beforeAll, afterAll} from 'vitest';
-import {execSync} from 'child_process';
-import {mkdtempSync} from 'fs';
-import {readFile, writeFile, rm} from 'node:fs/promises';
-import {join} from 'path';
-import {tmpdir} from 'os';
+import {spawnSync} from 'node:child_process';
+import {mkdtempSync} from 'node:fs';
+import {readdir, rm, writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {extname, join} from 'node:path';
+import type {DummyRuleMap, OxlintConfig} from 'oxlint';
+
+type FixtureOptions = {
+  rules: DummyRuleMap;
+  expectedRules: readonly string[];
+};
+
+const fixtures: Record<string, FixtureOptions> = {
+  'invalid.js': {
+    rules: {'e18e/prefer-includes': 'error'},
+    expectedRules: ['prefer-includes']
+  },
+  'prefer-array-to-sorted.js': {
+    rules: {'e18e/prefer-array-to-sorted': 'error'},
+    expectedRules: ['prefer-array-to-sorted']
+  },
+  'valid.js': {
+    rules: {'e18e/prefer-includes': 'error'},
+    expectedRules: []
+  }
+};
+
+function runOxlint(configPath: string, fixturePath: string) {
+  return spawnSync(
+    process.execPath,
+    [
+      join(process.cwd(), 'node_modules/oxlint/bin/oxlint'),
+      '-c',
+      configPath,
+      fixturePath
+    ],
+    {encoding: 'utf-8', cwd: process.cwd()}
+  );
+}
+
+function getReportedRuleNames(output: string): string[] {
+  const ruleNames = new Set<string>();
+
+  for (const match of output.matchAll(/e18e\(([^)]+)\)/g)) {
+    const ruleName = match[1];
+    if (ruleName) {
+      ruleNames.add(ruleName);
+    }
+  }
+
+  return [...ruleNames].sort();
+}
 
 describe('oxlint integration', () => {
   let tempDir: string;
-  let configPath: string;
+  let fixtureDirectory: string;
+  let baseConfig: OxlintConfig;
 
-  beforeAll(async () => {
+  beforeAll(() => {
     tempDir = mkdtempSync(join(tmpdir(), 'oxlint-test-'));
-
-    const configTemplate = await readFile(
-      join(process.cwd(), 'test/fixtures/oxlint/oxlint.config.json'),
-      'utf-8'
-    );
-
     const pluginPath = join(process.cwd(), 'lib', 'main.js');
-    const config = configTemplate.replace('<PLUGIN_PATH>', pluginPath);
-
-    configPath = join(tempDir, 'oxlint.config.json');
-    await writeFile(configPath, config);
+    baseConfig = {jsPlugins: [pluginPath]};
+    fixtureDirectory = join(process.cwd(), 'test/fixtures/oxlint');
   });
 
   afterAll(async () => {
@@ -32,53 +72,31 @@ describe('oxlint integration', () => {
     }
   });
 
-  it('should detect violations using the plugin', () => {
-    const invalidFile = join(process.cwd(), 'test/fixtures/oxlint/invalid.js');
+  it.each(Object.entries(fixtures))(
+    'should lint %s with its configured rules',
+    async (fixtureName, options) => {
+      const fixturePath = join(fixtureDirectory, fixtureName);
+      const configPath = join(tempDir, `${fixtureName}.oxlint.config.json`);
+      await writeFile(
+        configPath,
+        JSON.stringify({...baseConfig, rules: options.rules})
+      );
 
-    try {
-      execSync(`npx oxlint -c "${configPath}" "${invalidFile}"`, {
-        encoding: 'utf-8',
-        cwd: process.cwd()
-      });
+      const result = runOxlint(configPath, fixturePath);
+      const output = result.stdout + result.stderr;
 
-      expect.fail('Expected oxlint to report violations');
-    } catch (error) {
-      const errorObj = error as {stdout: string; stderr: string};
-      const output = errorObj.stdout + errorObj.stderr;
-      expect(output).toContain('e18e(prefer-includes)');
-      expect(output).toContain('invalid.js');
-    }
-  });
-
-  it('should pass when code follows the rule', () => {
-    const validFile = join(process.cwd(), 'test/fixtures/oxlint/valid.js');
-
-    const output = execSync(`npx oxlint -c "${configPath}" "${validFile}"`, {
-      encoding: 'utf-8',
-      cwd: process.cwd()
-    });
-
-    expect(output).not.toContain('e18e/prefer-includes');
-  });
-
-  it('should run prefer-array-to-sorted without crashing', () => {
-    const invalidFile = join(
-      process.cwd(),
-      'test/fixtures/oxlint/prefer-array-to-sorted.js'
-    );
-
-    try {
-      execSync(`npx oxlint -c "${configPath}" "${invalidFile}"`, {
-        encoding: 'utf-8',
-        cwd: process.cwd()
-      });
-
-      expect.fail('Expected oxlint to report a violation');
-    } catch (error) {
-      const errorObj = error as {stdout: string; stderr: string};
-      const output = errorObj.stdout + errorObj.stderr;
-      expect(output).toContain('e18e(prefer-array-to-sorted)');
+      expect(result.error).toBeUndefined();
       expect(output).not.toContain('Error running JS plugin');
+      expect(getReportedRuleNames(output)).toEqual(options.expectedRules);
+      expect(result.status).toBe(options.expectedRules.length === 0 ? 0 : 1);
     }
+  );
+
+  it('should configure every source fixture', async () => {
+    const fixtureNames = (await readdir(fixtureDirectory))
+      .filter((name) => extname(name) === '.js')
+      .toSorted();
+
+    expect(fixtureNames).toEqual(Object.keys(fixtures).toSorted());
   });
 });
