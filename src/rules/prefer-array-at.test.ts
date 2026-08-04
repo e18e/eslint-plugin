@@ -243,6 +243,59 @@ typedRuleTester.run('prefer-array-at (typed)', preferArrayAt, {
         declare const list: CustomList;
         const last = list[list.length - 1];
       `
+    },
+    {
+      // Direct Assignment
+      code: `
+        const items: number[] = [1];
+        items[items.length - 1]! = 42;
+      `
+    },
+    {
+      // Increment Assignment
+      code: `
+        const items: number[] = [1];
+        items[items.length - 1]! += 42;
+      `
+    },
+    {
+      // For-in Assignment
+      code: `
+        const items: string[] = [''];
+        const source = {key: true};
+        for (items[items.length - 1] in source) {}
+      `
+    },
+    {
+      // For-of Assignment
+      code: `
+        const items: number[] = [1];
+        const source = [2, 3];
+        for (items[items.length - 1] of source) {}
+      `
+    },
+    {
+      // Delete
+      code: `
+        const items: number[] = [1];
+        delete items[items.length - 1];
+      `
+    },
+    {
+      // AssignmentPattern target
+      code: `
+        const items: number[] = [1];
+        const values = [2];
+        [items[items.length - 1] = 0] = values;
+      `
+    },
+    {
+      // RestElement target
+      code: `
+        const items: number[][] = [[]];
+        const values = [1, 2];
+        [...items[items.length - 1]] = values;
+      `
     }
   ],
 
@@ -264,6 +317,26 @@ typedRuleTester.run('prefer-array-at (typed)', preferArrayAt, {
           column: 22,
           endLine: 3,
           endColumn: 41
+        }
+      ]
+    },
+    // Inner indexed assignment
+    {
+      code: `
+        const arr: number[] = [1, 2, 3];
+        arr[arr.length - 1]!.property = value
+      `,
+      output: `
+        const arr: number[] = [1, 2, 3];
+        arr.at(-1)!.property = value
+      `,
+      errors: [
+        {
+          messageId: 'preferAt',
+          line: 3,
+          column: 9,
+          endLine: 3,
+          endColumn: 28
         }
       ]
     },

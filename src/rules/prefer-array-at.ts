@@ -3,6 +3,32 @@ import {isArrayType, isStringType} from '../utils/typescript.js';
 
 type MessageIds = 'preferAt';
 
+function isWriteTarget(node: TSESTree.Node): boolean {
+  let target = node;
+
+  while (
+    target.parent?.type === 'TSAsExpression' ||
+    target.parent?.type === 'TSNonNullExpression' ||
+    target.parent?.type === 'TSTypeAssertion'
+  ) {
+    target = target.parent;
+  }
+
+  const parent = target.parent;
+
+  return (
+    (parent?.type === 'AssignmentExpression' && parent.left === target) ||
+    (parent?.type === 'UpdateExpression' && parent.argument === target) ||
+    (parent?.type === 'ForInStatement' && parent.left === target) ||
+    (parent?.type === 'ForOfStatement' && parent.left === target) ||
+    (parent?.type === 'AssignmentPattern' && parent.left === target) ||
+    (parent?.type === 'RestElement' && parent.argument === target) ||
+    (parent?.type === 'UnaryExpression' &&
+      parent.operator === 'delete' &&
+      parent.argument === target)
+  );
+}
+
 export const preferArrayAt: TSESLint.RuleModule<MessageIds, []> = {
   meta: {
     type: 'suggestion',
@@ -62,12 +88,7 @@ export const preferArrayAt: TSESLint.RuleModule<MessageIds, []> = {
           return;
         }
 
-        const parent = node.parent;
-        if (
-          parent &&
-          parent.type === 'AssignmentExpression' &&
-          parent.left === node
-        ) {
+        if (isWriteTarget(node)) {
           return;
         }
 
