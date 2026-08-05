@@ -719,6 +719,114 @@ ruleTester.run('prefer-array-some', preferArraySome, {
           endColumn: 43
         }
       ]
+    },
+
+    // arrays which need parentheses when used as the object of a property access
+    {
+      code: '(a ?? b).filter(fn).length === 0',
+      output: '!(a ?? b).some(fn)',
+      errors: [
+        {
+          messageId: 'preferArraySome',
+          line: 1,
+          column: 1,
+          endLine: 1,
+          endColumn: 33
+        }
+      ]
+    },
+    {
+      code: '(a ?? b).find(fn) === undefined',
+      output: '!(a ?? b).some(fn)',
+      errors: [
+        {
+          messageId: 'preferArraySome',
+          line: 1,
+          column: 1,
+          endLine: 1,
+          endColumn: 32
+        }
+      ]
+    },
+    {
+      code: 'if ((a ?? b).find(fn)) {}',
+      output: 'if ((a ?? b).some(fn)) {}',
+      errors: [
+        {
+          messageId: 'preferArraySome',
+          line: 1,
+          column: 5,
+          endLine: 1,
+          endColumn: 22
+        }
+      ]
+    },
+    {
+      code: 'if ((a ?? b).filter(fn).length) {}',
+      output: 'if ((a ?? b).some(fn)) {}',
+      errors: [
+        {
+          messageId: 'preferArraySome',
+          line: 1,
+          column: 5,
+          endLine: 1,
+          endColumn: 31
+        }
+      ]
+    },
+    {
+      code: '(x ? a : b).filter(fn).length === 0',
+      output: '!(x ? a : b).some(fn)',
+      errors: [
+        {
+          messageId: 'preferArraySome',
+          line: 1,
+          column: 1,
+          endLine: 1,
+          endColumn: 36
+        }
+      ]
+    },
+    {
+      code: 'async function f() { return (await x).filter(fn).length === 0; }',
+      output: 'async function f() { return !(await x).some(fn); }',
+      errors: [
+        {
+          messageId: 'preferArraySome',
+          line: 1,
+          column: 29,
+          endLine: 1,
+          endColumn: 62
+        }
+      ]
+    },
+    {
+      code: '(a, b).filter(fn).length > 0',
+      output: '(a, b).some(fn)',
+      errors: [
+        {
+          messageId: 'preferArraySome',
+          line: 1,
+          column: 1,
+          endLine: 1,
+          endColumn: 29
+        }
+      ]
+    },
+
+    // sequence expression arguments must stay parenthesised
+    {
+      code: 'arr.filter((a, fn)).length === 0',
+      output: '!arr.some((a, fn))',
+      errors: [
+        {
+          messageId: 'preferArraySome',
+          line: 1,
+          column: 1,
+          endLine: 1,
+          endColumn: 33
+        }
+      ]
     }
   ]
 });

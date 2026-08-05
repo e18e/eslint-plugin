@@ -163,6 +163,18 @@ const b = Array.from(arr2, y => y + 1)`,
           data: {iterable: 'numbers', mapper: 'n => n * 2'}
         }
       ]
+    },
+
+    // sequence expressions must stay parenthesised
+    {
+      code: 'const result = [...(a, items)].map(process)',
+      output: 'const result = Array.from((a, items), process)',
+      errors: [
+        {
+          messageId: 'preferArrayFrom',
+          data: {iterable: '(a, items)', mapper: 'process'}
+        }
+      ]
     }
   ]
 });

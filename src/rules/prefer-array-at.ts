@@ -1,5 +1,6 @@
 import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
 import {isArrayType, isStringType} from '../utils/typescript.js';
+import {needsParensForPropertyAccess} from '../utils/ast.js';
 
 type MessageIds = 'preferAt';
 
@@ -107,7 +108,10 @@ export const preferArrayAt: TSESLint.RuleModule<MessageIds, []> = {
             array: arrayText
           },
           fix(fixer) {
-            return fixer.replaceText(node, `${arrayText}.at(-1)`);
+            const objectText = needsParensForPropertyAccess(node.object)
+              ? `(${arrayText})`
+              : arrayText;
+            return fixer.replaceText(node, `${objectText}.at(-1)`);
           }
         });
       }

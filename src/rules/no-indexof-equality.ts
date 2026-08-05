@@ -1,5 +1,6 @@
 import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
 import {getTypedParserServices} from '../utils/typescript.js';
+import {formatArguments, needsParensForPropertyAccess} from '../utils/ast.js';
 
 type MessageIds = 'preferDirectAccess' | 'preferStartsWith';
 
@@ -69,15 +70,17 @@ export const noIndexOfEquality: TSESLint.RuleModule<MessageIds, []> = {
         }
 
         const objectNode = indexOfCall.callee.object;
-        const searchArg = indexOfCall.arguments[0];
         const type = services.getTypeAtLocation(objectNode as TSESTree.Node);
 
         if (!type) {
           return;
         }
 
-        const objectText = sourceCode.getText(objectNode);
-        const searchText = sourceCode.getText(searchArg);
+        const rawObjectText = sourceCode.getText(objectNode);
+        const objectText = needsParensForPropertyAccess(objectNode)
+          ? `(${rawObjectText})`
+          : rawObjectText;
+        const searchText = formatArguments(indexOfCall.arguments, sourceCode);
         const stringType = checker.getStringType();
 
         if (checker.isTypeAssignableTo(type, stringType)) {

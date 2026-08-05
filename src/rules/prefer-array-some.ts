@@ -11,7 +11,12 @@ import type {
   Node,
   UnaryExpression
 } from 'estree';
-import {isInBooleanContext, isNullish} from '../utils/ast.js';
+import {
+  formatArguments,
+  isInBooleanContext,
+  isNullish,
+  needsParensForPropertyAccess
+} from '../utils/ast.js';
 
 function isIdentifierOrStringLiteral(
   identifierName: string,
@@ -59,10 +64,12 @@ function reportFind(
   }
 
   const sourceCode = context.sourceCode;
-  const arrayText = sourceCode.getText(findCall.callee.object);
-  const argsText = findCall.arguments
-    .map((arg) => sourceCode.getText(arg))
-    .join(', ');
+  const arrayNode = findCall.callee.object;
+  const rawArrayText = sourceCode.getText(arrayNode);
+  const arrayText = needsParensForPropertyAccess(arrayNode)
+    ? `(${rawArrayText})`
+    : rawArrayText;
+  const argsText = formatArguments(findCall.arguments, sourceCode);
 
   const replacement = shouldNegate
     ? `!${arrayText}.some(${argsText})`
@@ -91,10 +98,15 @@ function reportFilterLength(
   }
 
   const sourceCode = context.sourceCode;
-  const arrayText = sourceCode.getText(filterLengthCall.object.callee.object);
-  const argsText = filterLengthCall.object.arguments
-    .map((arg) => sourceCode.getText(arg))
-    .join(', ');
+  const arrayNode = filterLengthCall.object.callee.object;
+  const rawArrayText = sourceCode.getText(arrayNode);
+  const arrayText = needsParensForPropertyAccess(arrayNode)
+    ? `(${rawArrayText})`
+    : rawArrayText;
+  const argsText = formatArguments(
+    filterLengthCall.object.arguments,
+    sourceCode
+  );
 
   const replacement = shouldNegate
     ? `!${arrayText}.some(${argsText})`

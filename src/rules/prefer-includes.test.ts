@@ -241,6 +241,30 @@ if (!items.includes(x)) {
       code: 'if (arr.indexOf(item, start) >= 0) {}',
       output: 'if (arr.includes(item, start)) {}',
       errors: [{messageId: 'preferIncludes', line: 1, column: 5}]
+    },
+
+    // arrays which need parentheses when used as the object of a property access
+    {
+      code: '(a ?? b).indexOf(item) === -1',
+      output: '!(a ?? b).includes(item)',
+      errors: [{messageId: 'preferIncludes', line: 1, column: 1}]
+    },
+    {
+      code: '(a ?? b).indexOf(item) !== -1',
+      output: '(a ?? b).includes(item)',
+      errors: [{messageId: 'preferIncludes', line: 1, column: 1}]
+    },
+    {
+      code: 'if ((x ? a : b).indexOf(item) >= 0) {}',
+      output: 'if ((x ? a : b).includes(item)) {}',
+      errors: [{messageId: 'preferIncludes', line: 1, column: 5}]
+    },
+
+    // sequence expression arguments must stay parenthesised
+    {
+      code: 'arr.indexOf((a, item)) === -1',
+      output: '!arr.includes((a, item))',
+      errors: [{messageId: 'preferIncludes', line: 1, column: 1}]
     }
   ]
 });

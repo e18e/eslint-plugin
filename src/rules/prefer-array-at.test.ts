@@ -463,6 +463,28 @@ typedRuleTester.run('prefer-array-at (typed)', preferArrayAt, {
           endColumn: 41
         }
       ]
+    },
+    // Arrays which need parentheses when used as the object of a property access
+    {
+      code: `
+        declare const a: string[] | undefined;
+        declare const b: string[];
+        const last = (a ?? b)[(a ?? b).length - 1];
+      `,
+      output: `
+        declare const a: string[] | undefined;
+        declare const b: string[];
+        const last = (a ?? b).at(-1);
+      `,
+      errors: [
+        {
+          messageId: 'preferAt',
+          line: 4,
+          column: 22,
+          endLine: 4,
+          endColumn: 51
+        }
+      ]
     }
   ]
 });

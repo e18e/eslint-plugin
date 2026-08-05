@@ -1,5 +1,6 @@
 import type {Rule} from 'eslint';
 import type {CallExpression} from 'estree';
+import {formatArguments} from '../utils/ast.js';
 
 export const preferArrayFromMap: Rule.RuleModule = {
   meta: {
@@ -54,8 +55,11 @@ export const preferArrayFromMap: Rule.RuleModule = {
         }
 
         const spreadElement = arrayExpr.elements[0];
-        const iterableText = sourceCode.getText(spreadElement.argument);
-        const mapperText = sourceCode.getText(node.arguments[0]!);
+        const iterableText = formatArguments(
+          [spreadElement.argument],
+          sourceCode
+        );
+        const mapperText = formatArguments([node.arguments[0]!], sourceCode);
 
         context.report({
           node,

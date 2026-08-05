@@ -235,6 +235,9 @@ export function formatArguments(
     return '';
   }
   return args
-    .map((arg) => (sourceCode as SourceCode).getText(arg as Node))
+    .map((arg) => {
+      const text = (sourceCode as SourceCode).getText(arg as Node);
+      return arg.type === 'SequenceExpression' ? `(${text})` : text;
+    })
     .join(', ');
 }

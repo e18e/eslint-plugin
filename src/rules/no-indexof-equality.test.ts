@@ -353,6 +353,63 @@ ruleTester.run('no-indexof-equality', noIndexOfEquality, {
         if (getName().startsWith("t")) {}
       `,
       errors: [{messageId: 'preferStartsWith', line: 5, column: 13}]
+    },
+
+    // objects which need parentheses when used as the object of a property access
+    {
+      code: `
+        declare const a: string | undefined;
+        declare const b: string;
+        if ((a ?? b).indexOf("t") === 0) {}
+      `,
+      output: `
+        declare const a: string | undefined;
+        declare const b: string;
+        if ((a ?? b).startsWith("t")) {}
+      `,
+      errors: [{messageId: 'preferStartsWith', line: 4, column: 13}]
+    },
+    {
+      code: `
+        declare const a: string[] | undefined;
+        declare const b: string[];
+        if ((a ?? b).indexOf("c") === 2) {}
+      `,
+      output: `
+        declare const a: string[] | undefined;
+        declare const b: string[];
+        if ((a ?? b)[2] === "c") {}
+      `,
+      errors: [
+        {
+          messageId: 'preferDirectAccess',
+          data: {array: '(a ?? b)', item: '"c"', index: '2'},
+          line: 4,
+          column: 13
+        }
+      ]
+    },
+
+    // sequence expression arguments must stay parenthesised
+    {
+      code: `
+        declare const arr: string[];
+        declare const item: string;
+        if (arr.indexOf((item, "c")) === 2) {}
+      `,
+      output: `
+        declare const arr: string[];
+        declare const item: string;
+        if (arr[2] === (item, "c")) {}
+      `,
+      errors: [
+        {
+          messageId: 'preferDirectAccess',
+          data: {array: 'arr', item: '(item, "c")', index: '2'},
+          line: 4,
+          column: 13
+        }
+      ]
     }
   ]
 });

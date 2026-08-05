@@ -5,6 +5,7 @@ import type {
   UnaryExpression,
   Expression
 } from 'estree';
+import {formatArguments, needsParensForPropertyAccess} from '../utils/ast.js';
 
 function isIndexOfCall(node: Expression): node is CallExpression {
   return (
@@ -36,15 +37,16 @@ function reportIndexOf(
   shouldNegate: boolean
 ) {
   const sourceCode = context.sourceCode;
-  const arrayText = sourceCode.getText(
+  const arrayNode =
     indexOfCall.callee.type === 'MemberExpression'
       ? indexOfCall.callee.object
-      : indexOfCall.callee
-  );
+      : indexOfCall.callee;
+  const rawArrayText = sourceCode.getText(arrayNode);
+  const arrayText = needsParensForPropertyAccess(arrayNode)
+    ? `(${rawArrayText})`
+    : rawArrayText;
 
-  const argsText = indexOfCall.arguments
-    .map((arg) => sourceCode.getText(arg))
-    .join(', ');
+  const argsText = formatArguments(indexOfCall.arguments, sourceCode);
 
   const replacement = shouldNegate
     ? `!${arrayText}.includes(${argsText})`
