@@ -1,8 +1,7 @@
 import {readFileSync} from 'node:fs';
 import * as pkg from 'empathic/package';
 import type {Rule} from 'eslint';
-import semverSatisfies from 'semver/functions/satisfies.js';
-import semverLessThan from 'semver/ranges/ltr.js';
+import {satisfies, isLessThanRange} from 'verkit';
 
 /**
  * Gets the node engine constraint from `package.json` if possible
@@ -86,7 +85,7 @@ export function closestPackageSatisfiesNodeVersion(
   }
 
   return (
-    semverLessThan(version, nodeConstraint) ||
-    semverSatisfies(version, nodeConstraint)
+    isLessThanRange(version, nodeConstraint) ||
+    satisfies(version, nodeConstraint)
   );
 }
