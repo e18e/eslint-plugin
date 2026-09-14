@@ -32,6 +32,9 @@ ruleTester.run('ban-dependencies', banDependencies, {
       code: `import foo from 'unknown-module';`
     },
     {
+      code: `import foo from 'unknown-module/subpath';`
+    },
+    {
       code: `const foo = require('unknown-module');`
     },
     {
@@ -56,6 +59,15 @@ ruleTester.run('ban-dependencies', banDependencies, {
     },
     {
       code: `import foo from 'is-nan';`,
+      options: [
+        {
+          presets: ['native'],
+          allowed: ['is-nan']
+        }
+      ]
+    },
+    {
+      code: `import foo from 'is-nan/subpath';`,
       options: [
         {
           presets: ['native'],
@@ -125,6 +137,21 @@ ruleTester.run('ban-dependencies', banDependencies, {
     },
     {
       code: `import foo from 'is-number';`,
+      errors: [
+        {
+          line: 1,
+          column: 1,
+          messageId: 'simpleReplacement',
+          data: {
+            name: 'is-number',
+            description:
+              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
+          }
+        }
+      ]
+    },
+    {
+      code: `import foo from 'is-number/subpath';`,
       errors: [
         {
           line: 1,
@@ -218,6 +245,46 @@ ruleTester.run('ban-dependencies', banDependencies, {
           messageId: 'removalReplacement',
           data: {
             name: 'oogabooga',
+            description:
+              'This module is disallowed and should be replaced with an alternative.'
+          }
+        }
+      ]
+    },
+    {
+      code: `import foo from 'oogabooga/subpath/deep';`,
+      options: [
+        {
+          modules: ['oogabooga', 'oogabooga/subpath']
+        }
+      ],
+      errors: [
+        {
+          line: 1,
+          column: 1,
+          messageId: 'removalReplacement',
+          data: {
+            name: 'oogabooga',
+            description:
+              'This module is disallowed and should be replaced with an alternative.'
+          }
+        }
+      ]
+    },
+    {
+      code: `import foo from 'oogabooga/subpath/deep';`,
+      options: [
+        {
+          modules: ['oogabooga/subpath', 'oogabooga']
+        }
+      ],
+      errors: [
+        {
+          line: 1,
+          column: 1,
+          messageId: 'removalReplacement',
+          data: {
+            name: 'oogabooga/subpath',
             description:
               'This module is disallowed and should be replaced with an alternative.'
           }

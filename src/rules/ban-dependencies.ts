@@ -20,10 +20,25 @@ interface BanDependenciesOptions {
   allowed?: string[];
 }
 
-const availablePresets: Record<string, ManifestModule> = {
-  microutilities: microUtilsReplacements,
-  native: nativeReplacements,
-  preferred: preferredReplacements
+interface PreparedManifest {
+  mappings: Array<[string, ModuleReplacementMapping]>;
+  moduleNames: Set<string>;
+  replacements: ManifestModule['replacements'];
+}
+
+function prepareManifest(manifest: ManifestModule): PreparedManifest {
+  const mappings = Object.entries(manifest.mappings);
+  return {
+    mappings,
+    moduleNames: new Set(mappings.map(([moduleName]) => moduleName)),
+    replacements: manifest.replacements
+  };
+}
+
+const availablePresets: Record<string, PreparedManifest> = {
+  microutilities: prepareManifest(microUtilsReplacements),
+  native: prepareManifest(nativeReplacements),
+  preferred: prepareManifest(preferredReplacements)
 };
 
 const defaultPresets = ['microutilities', 'native', 'preferred'];
@@ -53,9 +68,24 @@ function hasMatchingEngine(
 /**
  * Callback used for the replacement listener
  */
+function hasMatchingModule(moduleNames: Set<string>, source: string): boolean {
+  let candidate = source;
+  while (true) {
+    if (moduleNames.has(candidate)) {
+      return true;
+    }
+
+    const separator = candidate.lastIndexOf('/');
+    if (separator === -1) {
+      return false;
+    }
+    candidate = candidate.slice(0, separator);
+  }
+}
+
 function replacementListenerCallback(
   context: Rule.RuleContext,
-  manifests: ManifestModule[],
+  manifests: PreparedManifest[],
   allowedNames: Set<string>,
   node: Rule.Node,
   source: string
@@ -70,7 +100,11 @@ function replacementListenerCallback(
   let currentMapping: ModuleReplacementMapping | undefined;
 
   for (const manifest of manifests) {
-    for (const [moduleName, mapping] of Object.entries(manifest.mappings)) {
+    if (!hasMatchingModule(manifest.moduleNames, source)) {
+      continue;
+    }
+
+    for (const [moduleName, mapping] of manifest.mappings) {
       if (moduleName === source || source.startsWith(`${moduleName}/`)) {
         currentMapping = mapping;
         for (const replacementId of mapping.replacements) {
@@ -190,7 +224,7 @@ export const banDependencies: Rule.RuleModule = {
   },
   create: (context) => {
     const options = context.options[0] as BanDependenciesOptions | undefined;
-    const manifests: ManifestModule[] = [];
+    const manifests: PreparedManifest[] = [];
     const presets = options?.presets ?? defaultPresets;
     const modules = options?.modules;
     const allowed = new Set(options?.allowed ?? []);
@@ -223,7 +257,7 @@ export const banDependencies: Rule.RuleModule = {
           }
         }
       };
-      manifests.push(customManifest);
+      manifests.push(prepareManifest(customManifest));
     }
 
     if (packageJsonLikePath.test(context.filename)) {
