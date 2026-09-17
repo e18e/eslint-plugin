@@ -54,12 +54,29 @@ export const preferArrayFromMap: Rule.RuleModule = {
           return;
         }
 
+        const mapper = node.arguments[0]!;
+
+        // Array.from's mapper is called with (element, index) only, so a
+        // callback which can access the third `array` argument can't be
+        // converted
+        if (
+          mapper.type === 'FunctionExpression' ||
+          mapper.type === 'ArrowFunctionExpression'
+        ) {
+          if (
+            mapper.params.length > 2 ||
+            mapper.params.some((param) => param.type === 'RestElement')
+          ) {
+            return;
+          }
+        }
+
         const spreadElement = arrayExpr.elements[0];
         const iterableText = formatArguments(
           [spreadElement.argument],
           sourceCode
         );
-        const mapperText = formatArguments([node.arguments[0]!], sourceCode);
+        const mapperText = formatArguments([mapper], sourceCode);
 
         context.report({
           node,

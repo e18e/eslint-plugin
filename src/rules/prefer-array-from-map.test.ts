@@ -33,7 +33,14 @@ ruleTester.run('prefer-array-from-map', preferArrayFromMap, {
     'const result = [arr].map(x => x * 2)',
 
     // Empty array
-    'const result = [].map(x => x * 2)'
+    'const result = [].map(x => x * 2)',
+
+    // Mapper can access the third `array` argument, which Array.from's
+    // mapper is never given
+    'const result = [...arr].map((x, i, all) => all[i - 1])',
+    'const result = [...arr].map(function(x, i, all) { return all[i - 1] })',
+    'const result = [...arr].map((...args) => args[2])',
+    'const result = [...arr].map((x, ...rest) => rest[1])'
   ],
 
   invalid: [
