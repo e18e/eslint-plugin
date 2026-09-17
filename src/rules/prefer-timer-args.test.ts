@@ -51,6 +51,16 @@ ruleTester.run('prefer-timer-args', preferTimerArgs, {
     'setTimeout(() => fn({key: getData()}), 100)',
     'setTimeout(fn.bind(null, getData()), 100)',
 
+    // Unsafe transformations - arguments mutate state
+    'setTimeout(() => fn(i++), 100)',
+    'setTimeout(() => fn(--i), 100)',
+    'setTimeout(() => fn(delete obj.key), 100)',
+    'setTimeout(fn.bind(null, i++), 100)',
+
+    // Unsafe transformations - template literals containing calls
+    'setTimeout(() => fn(`${getData()}`), 100)',
+    'setTimeout(() => fn(`${i++}`), 100)',
+
     // window.setTimeout examples
     'window.setTimeout(doSomething, 100)',
     'window.setTimeout(() => { doSomething(a); }, 100)',

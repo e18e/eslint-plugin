@@ -37,8 +37,10 @@ function isSafeArgument(arg: Expression | SpreadElement): boolean {
   switch (arg.type) {
     case 'Identifier':
     case 'Literal':
-    case 'TemplateLiteral':
       return true;
+
+    case 'TemplateLiteral':
+      return arg.expressions.every(isSafeArgument);
 
     case 'MemberExpression':
       if (
@@ -76,7 +78,9 @@ function isSafeArgument(arg: Expression | SpreadElement): boolean {
       });
 
     case 'UnaryExpression':
-    case 'UpdateExpression':
+      if (arg.operator === 'delete') {
+        return false;
+      }
       return isSafeArgument(arg.argument);
 
     case 'BinaryExpression':
