@@ -14,7 +14,7 @@ export const preferArrayFromMap: Rule.RuleModule = {
     schema: [],
     messages: {
       preferArrayFrom:
-        'Use Array.from({{iterable}}, {{mapper}}) instead of [...{{iterable}}].map({{mapper}}) to avoid creating an intermediate array'
+        'Use `Array.from(iterable, fn)` instead of `[...iterable].map(fn)` to avoid creating an intermediate array.'
     }
   },
   create(context) {
@@ -81,10 +81,6 @@ export const preferArrayFromMap: Rule.RuleModule = {
         context.report({
           node,
           messageId: 'preferArrayFrom',
-          data: {
-            iterable: iterableText,
-            mapper: mapperText
-          },
           fix(fixer) {
             return fixer.replaceText(
               node,

@@ -127,7 +127,7 @@ export const preferRegexTest: TSESLint.RuleModule<MessageIds, []> = {
     fixable: 'code',
     messages: {
       preferTest:
-        'Prefer `{{regex}}.test({{string}})` over `{{original}}` for boolean checks'
+        'Prefer `regex.test(str)` over `match`/`exec` for boolean checks'
     },
     schema: []
   },
@@ -178,11 +178,6 @@ export const preferRegexTest: TSESLint.RuleModule<MessageIds, []> = {
         context.report({
           node,
           messageId: 'preferTest',
-          data: {
-            regex: regexText,
-            string: stringText,
-            original: sourceCode.getText(node)
-          },
           fix(fixer) {
             return fixer.replaceText(node, `${regexText}.test(${stringText})`);
           }

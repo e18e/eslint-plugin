@@ -62,84 +62,49 @@ ruleTester.run('prefer-array-fill', preferArrayFill, {
     {
       code: 'const arr = Array.from({length: 5}, () => 0)',
       output: 'const arr = Array.from({length: 5}).fill(0)',
-      errors: [
-        {
-          messageId: 'preferFillArrayFrom',
-          data: {length: '5', value: '0'}
-        }
-      ]
+      errors: [{messageId: 'preferFillArrayFrom'}]
     },
 
     // Array.from with string value
     {
       code: 'const arr = Array.from({length: 3}, () => "test")',
       output: 'const arr = Array.from({length: 3}).fill("test")',
-      errors: [
-        {
-          messageId: 'preferFillArrayFrom',
-          data: {length: '3', value: '"test"'}
-        }
-      ]
+      errors: [{messageId: 'preferFillArrayFrom'}]
     },
 
     // Array.from with expression in length
     {
       code: 'const arr = Array.from({length: 2 + 3}, () => 0)',
       output: 'const arr = Array.from({length: 2 + 3}).fill(0)',
-      errors: [
-        {
-          messageId: 'preferFillArrayFrom',
-          data: {length: '2 + 3', value: '0'}
-        }
-      ]
+      errors: [{messageId: 'preferFillArrayFrom'}]
     },
 
     // Array.from with regular function expression
     {
       code: 'const arr = Array.from({length: 5}, function() { return 0 })',
       output: 'const arr = Array.from({length: 5}).fill(0)',
-      errors: [
-        {
-          messageId: 'preferFillArrayFrom',
-          data: {length: '5', value: '0'}
-        }
-      ]
+      errors: [{messageId: 'preferFillArrayFrom'}]
     },
 
     // Spread Array with map and arrow function
     {
       code: 'const arr = [...Array(5)].map(() => 0)',
       output: 'const arr = Array(5).fill(0)',
-      errors: [
-        {
-          messageId: 'preferFillSpreadMap',
-          data: {length: '5', value: '0'}
-        }
-      ]
+      errors: [{messageId: 'preferFillSpreadMap'}]
     },
 
     // Spread Array with map and string value
     {
       code: 'const arr = [...Array(3)].map(() => "test")',
       output: 'const arr = Array(3).fill("test")',
-      errors: [
-        {
-          messageId: 'preferFillSpreadMap',
-          data: {length: '3', value: '"test"'}
-        }
-      ]
+      errors: [{messageId: 'preferFillSpreadMap'}]
     },
 
     // Spread Array with map and function expression
     {
       code: 'const arr = [...Array(5)].map(function() { return 1 })',
       output: 'const arr = Array(5).fill(1)',
-      errors: [
-        {
-          messageId: 'preferFillSpreadMap',
-          data: {length: '5', value: '1'}
-        }
-      ]
+      errors: [{messageId: 'preferFillSpreadMap'}]
     },
 
     // Multiple occurrences
@@ -149,14 +114,8 @@ const arr2 = [...Array(3)].map(() => "test");`,
       output: `const arr1 = Array.from({length: 5}).fill(0);
 const arr2 = Array(3).fill("test");`,
       errors: [
-        {
-          messageId: 'preferFillArrayFrom',
-          data: {length: '5', value: '0'}
-        },
-        {
-          messageId: 'preferFillSpreadMap',
-          data: {length: '3', value: '"test"'}
-        }
+        {messageId: 'preferFillArrayFrom'},
+        {messageId: 'preferFillSpreadMap'}
       ]
     },
 
@@ -164,72 +123,42 @@ const arr2 = Array(3).fill("test");`,
     {
       code: 'console.log(Array.from({length: 5}, () => 0))',
       output: 'console.log(Array.from({length: 5}).fill(0))',
-      errors: [
-        {
-          messageId: 'preferFillArrayFrom',
-          data: {length: '5', value: '0'}
-        }
-      ]
+      errors: [{messageId: 'preferFillArrayFrom'}]
     },
 
     // Used in return statements
     {
       code: 'function getArray() { return [...Array(5)].map(() => 0) }',
       output: 'function getArray() { return Array(5).fill(0) }',
-      errors: [
-        {
-          messageId: 'preferFillSpreadMap',
-          data: {length: '5', value: '0'}
-        }
-      ]
+      errors: [{messageId: 'preferFillSpreadMap'}]
     },
 
     // Variable length
     {
       code: 'const arr = Array.from({length: n}, () => 0)',
       output: 'const arr = Array.from({length: n}).fill(0)',
-      errors: [
-        {
-          messageId: 'preferFillArrayFrom',
-          data: {length: 'n', value: '0'}
-        }
-      ]
+      errors: [{messageId: 'preferFillArrayFrom'}]
     },
 
     // Complex expressions in value
     {
       code: 'const arr = [...Array(5)].map(() => 1 + 2)',
       output: 'const arr = Array(5).fill(1 + 2)',
-      errors: [
-        {
-          messageId: 'preferFillSpreadMap',
-          data: {length: '5', value: '1 + 2'}
-        }
-      ]
+      errors: [{messageId: 'preferFillSpreadMap'}]
     },
 
     // Logical expression with all-constant operands
     {
       code: 'const arr = Array.from({length: 5}, () => a ?? b)',
       output: 'const arr = Array.from({length: 5}).fill(a ?? b)',
-      errors: [
-        {
-          messageId: 'preferFillArrayFrom',
-          data: {length: '5', value: 'a ?? b'}
-        }
-      ]
+      errors: [{messageId: 'preferFillArrayFrom'}]
     },
 
     // Conditional expression with all-constant branches
     {
       code: 'const arr = [...Array(5)].map(() => a ? b : c)',
       output: 'const arr = Array(5).fill(a ? b : c)',
-      errors: [
-        {
-          messageId: 'preferFillSpreadMap',
-          data: {length: '5', value: 'a ? b : c'}
-        }
-      ]
+      errors: [{messageId: 'preferFillSpreadMap'}]
     }
   ]
 });

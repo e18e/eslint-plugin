@@ -91,9 +91,9 @@ export const preferArrayFill: Rule.RuleModule = {
     schema: [],
     messages: {
       preferFillArrayFrom:
-        'Use Array.from({length: {{length}}}).fill({{value}}) instead of Array.from with a constant callback',
+        'Use `Array.from({length: n}).fill(value)` instead of `Array.from` with a constant callback',
       preferFillSpreadMap:
-        'Use Array({{length}}).fill({{value}}) instead of spread Array with map'
+        'Use `Array(n).fill(value)` instead of spreading `Array(n)` and mapping'
     }
   },
   create(context) {
@@ -139,10 +139,6 @@ export const preferArrayFill: Rule.RuleModule = {
               context.report({
                 node,
                 messageId: 'preferFillArrayFrom',
-                data: {
-                  length: lengthText,
-                  value: valueText
-                },
                 fix(fixer) {
                   return fixer.replaceText(
                     node,
@@ -195,10 +191,6 @@ export const preferArrayFill: Rule.RuleModule = {
               context.report({
                 node,
                 messageId: 'preferFillSpreadMap',
-                data: {
-                  length: lengthText,
-                  value: valueText
-                },
                 fix(fixer) {
                   return fixer.replaceText(
                     node,
