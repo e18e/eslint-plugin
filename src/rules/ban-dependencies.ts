@@ -21,16 +21,19 @@ interface BanDependenciesOptions {
 }
 
 interface PreparedManifest {
-  mappings: Array<[string, ModuleReplacementMapping]>;
-  moduleNames: Set<string>;
+  /** Maps each module name to its mapping and its position in the manifest */
+  mappings: Map<string, {index: number; mapping: ModuleReplacementMapping}>;
   replacements: ManifestModule['replacements'];
 }
 
 function prepareManifest(manifest: ManifestModule): PreparedManifest {
-  const mappings = Object.entries(manifest.mappings);
   return {
-    mappings,
-    moduleNames: new Set(mappings.map(([moduleName]) => moduleName)),
+    mappings: new Map(
+      Object.entries(manifest.mappings).map(([moduleName, mapping], index) => [
+        moduleName,
+        {index, mapping}
+      ])
+    ),
     replacements: manifest.replacements
   };
 }
@@ -66,23 +69,32 @@ function hasMatchingEngine(
 }
 
 /**
- * Callback used for the replacement listener
+ * Finds the mapping for `source` or one of its parent paths. If several match,
+ * the one listed first in the manifest wins.
  */
-function hasMatchingModule(moduleNames: Set<string>, source: string): boolean {
+function findMapping(
+  manifest: PreparedManifest,
+  source: string
+): ModuleReplacementMapping | undefined {
+  let match: {index: number; mapping: ModuleReplacementMapping} | undefined;
   let candidate = source;
   while (true) {
-    if (moduleNames.has(candidate)) {
-      return true;
+    const entry = manifest.mappings.get(candidate);
+    if (entry && (!match || entry.index < match.index)) {
+      match = entry;
     }
 
     const separator = candidate.lastIndexOf('/');
     if (separator === -1) {
-      return false;
+      return match?.mapping;
     }
     candidate = candidate.slice(0, separator);
   }
 }
 
+/**
+ * Callback used for the replacement listener
+ */
 function replacementListenerCallback(
   context: Rule.RuleContext,
   manifests: PreparedManifest[],
@@ -100,20 +112,16 @@ function replacementListenerCallback(
   let currentMapping: ModuleReplacementMapping | undefined;
 
   for (const manifest of manifests) {
-    if (!hasMatchingModule(manifest.moduleNames, source)) {
+    const mapping = findMapping(manifest, source);
+    if (!mapping) {
       continue;
     }
 
-    for (const [moduleName, mapping] of manifest.mappings) {
-      if (moduleName === source || source.startsWith(`${moduleName}/`)) {
-        currentMapping = mapping;
-        for (const replacementId of mapping.replacements) {
-          const replacement = manifest.replacements[replacementId];
-          if (replacement) {
-            replacements.push(replacement);
-          }
-        }
-        break;
+    currentMapping = mapping;
+    for (const replacementId of mapping.replacements) {
+      const replacement = manifest.replacements[replacementId];
+      if (replacement) {
+        replacements.push(replacement);
       }
     }
   }
