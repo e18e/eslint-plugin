@@ -20,28 +20,10 @@ interface BanDependenciesOptions {
   allowed?: string[];
 }
 
-interface PreparedManifest {
-  /** Maps each module name to its mapping and its position in the manifest */
-  mappings: Map<string, {index: number; mapping: ModuleReplacementMapping}>;
-  replacements: ManifestModule['replacements'];
-}
-
-function prepareManifest(manifest: ManifestModule): PreparedManifest {
-  return {
-    mappings: new Map(
-      Object.entries(manifest.mappings).map(([moduleName, mapping], index) => [
-        moduleName,
-        {index, mapping}
-      ])
-    ),
-    replacements: manifest.replacements
-  };
-}
-
-const availablePresets: Record<string, PreparedManifest> = {
-  microutilities: prepareManifest(microUtilsReplacements),
-  native: prepareManifest(nativeReplacements),
-  preferred: prepareManifest(preferredReplacements)
+const availablePresets: Record<string, ManifestModule> = {
+  microutilities: microUtilsReplacements,
+  native: nativeReplacements,
+  preferred: preferredReplacements
 };
 
 const defaultPresets = ['microutilities', 'native', 'preferred'];
@@ -69,27 +51,25 @@ function hasMatchingEngine(
 }
 
 /**
- * Finds the mapping for `source` or one of its parent paths. If several match,
- * the one listed first in the manifest wins.
+ * Finds the mapping for `source` or its closest parent path. For example,
+ * `foo/bar/baz` checks `foo/bar/baz`, then `foo/bar`, then `foo`.
  */
 function findMapping(
-  manifest: PreparedManifest,
+  mappings: ManifestModule['mappings'],
   source: string
 ): ModuleReplacementMapping | undefined {
-  let match: {index: number; mapping: ModuleReplacementMapping} | undefined;
-  let candidate = source;
-  while (true) {
-    const entry = manifest.mappings.get(candidate);
-    if (entry && (!match || entry.index < match.index)) {
-      match = entry;
+  // `end` only decreases, so the loop always terminates.
+  for (
+    let end = source.length;
+    end > 0;
+    end = source.lastIndexOf('/', end - 1)
+  ) {
+    const moduleName = source.slice(0, end);
+    if (Object.hasOwn(mappings, moduleName)) {
+      return mappings[moduleName];
     }
-
-    const separator = candidate.lastIndexOf('/');
-    if (separator === -1) {
-      return match?.mapping;
-    }
-    candidate = candidate.slice(0, separator);
   }
+  return undefined;
 }
 
 /**
@@ -97,7 +77,7 @@ function findMapping(
  */
 function replacementListenerCallback(
   context: Rule.RuleContext,
-  manifests: PreparedManifest[],
+  manifests: ManifestModule[],
   allowedNames: Set<string>,
   node: Rule.Node,
   source: string
@@ -112,7 +92,7 @@ function replacementListenerCallback(
   let currentMapping: ModuleReplacementMapping | undefined;
 
   for (const manifest of manifests) {
-    const mapping = findMapping(manifest, source);
+    const mapping = findMapping(manifest.mappings, source);
     if (!mapping) {
       continue;
     }
@@ -232,7 +212,7 @@ export const banDependencies: Rule.RuleModule = {
   },
   create: (context) => {
     const options = context.options[0] as BanDependenciesOptions | undefined;
-    const manifests: PreparedManifest[] = [];
+    const manifests: ManifestModule[] = [];
     const presets = options?.presets ?? defaultPresets;
     const modules = options?.modules;
     const allowed = new Set(options?.allowed ?? []);
@@ -265,7 +245,7 @@ export const banDependencies: Rule.RuleModule = {
           }
         }
       };
-      manifests.push(prepareManifest(customManifest));
+      manifests.push(customManifest);
     }
 
     if (packageJsonLikePath.test(context.filename)) {

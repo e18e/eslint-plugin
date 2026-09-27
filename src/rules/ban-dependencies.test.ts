@@ -264,7 +264,7 @@ ruleTester.run('ban-dependencies', banDependencies, {
           column: 1,
           messageId: 'removalReplacement',
           data: {
-            name: 'oogabooga',
+            name: 'oogabooga/subpath',
             description:
               'This module is disallowed and should be replaced with an alternative.'
           }
