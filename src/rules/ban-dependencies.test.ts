@@ -129,8 +129,7 @@ ruleTester.run('ban-dependencies', banDependencies, {
           messageId: 'simpleReplacement',
           data: {
             name: 'is-number',
-            description:
-              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
+            description: 'You can use `typeof` to check if a value is a number.'
           }
         }
       ]
@@ -144,8 +143,7 @@ ruleTester.run('ban-dependencies', banDependencies, {
           messageId: 'simpleReplacement',
           data: {
             name: 'is-number',
-            description:
-              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
+            description: 'You can use `typeof` to check if a value is a number.'
           }
         }
       ]
@@ -159,8 +157,7 @@ ruleTester.run('ban-dependencies', banDependencies, {
           messageId: 'simpleReplacement',
           data: {
             name: 'is-number',
-            description:
-              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
+            description: 'You can use `typeof` to check if a value is a number.'
           }
         }
       ]
@@ -174,8 +171,7 @@ ruleTester.run('ban-dependencies', banDependencies, {
           messageId: 'simpleReplacement',
           data: {
             name: 'is-number',
-            description:
-              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
+            description: 'You can use `typeof` to check if a value is a number.'
           }
         }
       ]
@@ -192,8 +188,7 @@ ruleTester.run('ban-dependencies', banDependencies, {
           messageId: 'simpleReplacement',
           data: {
             name: 'is-number',
-            description:
-              'You can check if a value is a number by using `typeof` or coercing it to a number and using `Number.isFinite`.'
+            description: 'You can use `typeof` to check if a value is a number.'
           }
         }
       ]

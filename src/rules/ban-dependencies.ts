@@ -204,7 +204,7 @@ export const banDependencies: Rule.RuleModule = {
         '"{{name}}" should be replaced with an alternative package. In your ' +
         'project, we recommend {{replacement}}. Read more here: {{url}}',
       simpleReplacement:
-        '"{{name}}" should be replaced with inline/local logic.' +
+        '"{{name}}" should be replaced with inline/local logic. ' +
         '{{description}}',
       removalReplacement:
         '"{{name}}" is flagged as no longer needed. {{description}}'
