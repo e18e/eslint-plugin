@@ -61,6 +61,15 @@ ruleTester.run('prefer-timer-args', preferTimerArgs, {
     'setTimeout(() => fn(`${getData()}`), 100)',
     'setTimeout(() => fn(`${i++}`), 100)',
 
+    // Member expressions may change between scheduling and firing
+    'setTimeout(() => fn(obj.prop), 100)',
+    'setTimeout(() => fn(obj[key]), 100)',
+    'setTimeout(() => fn(a, obj.prop), 100)',
+    'setTimeout(() => fn(obj.prop + 1), 100)',
+    'setTimeout(() => fn([obj.prop]), 100)',
+    'setTimeout(() => fn({key: obj.prop}), 100)',
+    'setTimeout(() => fn(`${obj.prop}`), 100)',
+
     // window.setTimeout examples
     'window.setTimeout(doSomething, 100)',
     'window.setTimeout(() => { doSomething(a); }, 100)',
@@ -255,6 +264,21 @@ setTimeout(fn2, 200, b, c);`,
       errors: [
         {
           messageId: 'preferArgs'
+        }
+      ]
+    },
+
+    // bind() with member expression arguments
+    {
+      code: 'setTimeout(fn.bind(null, obj.prop, arr[0]), 100)',
+      output: 'setTimeout(fn, 100, obj.prop, arr[0])',
+      errors: [
+        {
+          messageId: 'preferArgs',
+          line: 1,
+          column: 1,
+          endLine: 1,
+          endColumn: 49
         }
       ]
     },

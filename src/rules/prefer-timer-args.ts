@@ -29,7 +29,10 @@ function isTimerCall(node: CallExpression): boolean {
   return false;
 }
 
-function isSafeArgument(arg: Expression | SpreadElement): boolean {
+function isSafeArgument(
+  arg: Expression | SpreadElement,
+  allowMemberExpressions: boolean
+): boolean {
   if (arg.type === 'SpreadElement') {
     return arg.argument.type === 'Identifier';
   }
@@ -40,30 +43,35 @@ function isSafeArgument(arg: Expression | SpreadElement): boolean {
       return true;
 
     case 'TemplateLiteral':
-      return arg.expressions.every(isSafeArgument);
+      return arg.expressions.every((expr) =>
+        isSafeArgument(expr, allowMemberExpressions)
+      );
 
     case 'MemberExpression':
       if (
+        !allowMemberExpressions ||
         arg.object.type === 'Super' ||
         arg.property.type === 'PrivateIdentifier'
       ) {
         return false;
       }
-      if (!isSafeArgument(arg.object)) {
+      if (!isSafeArgument(arg.object, allowMemberExpressions)) {
         return false;
       }
       if (arg.computed) {
-        return isSafeArgument(arg.property);
+        return isSafeArgument(arg.property, allowMemberExpressions);
       }
       return true;
 
     case 'ArrayExpression':
-      return arg.elements.every((el) => el === null || isSafeArgument(el));
+      return arg.elements.every(
+        (el) => el === null || isSafeArgument(el, allowMemberExpressions)
+      );
 
     case 'ObjectExpression':
       return arg.properties.every((prop) => {
         if (prop.type === 'SpreadElement') {
-          return isSafeArgument(prop.argument);
+          return isSafeArgument(prop.argument, allowMemberExpressions);
         }
         const valueType = prop.value.type;
         if (
@@ -74,28 +82,28 @@ function isSafeArgument(arg: Expression | SpreadElement): boolean {
         ) {
           return false;
         }
-        return isSafeArgument(prop.value);
+        return isSafeArgument(prop.value, allowMemberExpressions);
       });
 
     case 'UnaryExpression':
       if (arg.operator === 'delete') {
         return false;
       }
-      return isSafeArgument(arg.argument);
+      return isSafeArgument(arg.argument, allowMemberExpressions);
 
     case 'BinaryExpression':
     case 'LogicalExpression':
       return (
         arg.left.type !== 'PrivateIdentifier' &&
-        isSafeArgument(arg.left) &&
-        isSafeArgument(arg.right)
+        isSafeArgument(arg.left, allowMemberExpressions) &&
+        isSafeArgument(arg.right, allowMemberExpressions)
       );
 
     case 'ConditionalExpression':
       return (
-        isSafeArgument(arg.test) &&
-        isSafeArgument(arg.consequent) &&
-        isSafeArgument(arg.alternate)
+        isSafeArgument(arg.test, allowMemberExpressions) &&
+        isSafeArgument(arg.consequent, allowMemberExpressions) &&
+        isSafeArgument(arg.alternate, allowMemberExpressions)
       );
 
     // CallExpression, NewExpression, etc.
@@ -166,7 +174,7 @@ export const preferTimerArgs: Rule.RuleModule = {
             return;
           }
 
-          if (!callArgs.every(isSafeArgument)) {
+          if (!callArgs.every((arg) => isSafeArgument(arg, false))) {
             return;
           }
 
@@ -205,7 +213,7 @@ export const preferTimerArgs: Rule.RuleModule = {
           const bindArgs = bindCall.arguments.slice(1);
 
           // Check if any bind argument contains a call expression or other unsafe construct
-          if (!bindArgs.every(isSafeArgument)) {
+          if (!bindArgs.every((arg) => isSafeArgument(arg, true))) {
             return;
           }
 
