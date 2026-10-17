@@ -1,5 +1,10 @@
-import type {Rule} from 'eslint';
-import type {CallExpression, Expression, SpreadElement} from 'estree';
+import type {Rule, Scope} from 'eslint';
+import type {
+  CallExpression,
+  Expression,
+  Identifier,
+  SpreadElement
+} from 'estree';
 
 function isNullOrUndefined(node: Expression): boolean {
   if (node.type === 'Literal' && node.value === null) {
@@ -29,49 +34,69 @@ function isTimerCall(node: CallExpression): boolean {
   return false;
 }
 
+function isReassigned(scope: Scope.Scope, node: Identifier): boolean {
+  for (let s: Scope.Scope | null = scope; s; s = s.upper) {
+    const variable = s.set.get(node.name);
+    if (variable) {
+      return variable.references.some((ref) => !ref.init && ref.isWrite());
+    }
+  }
+  return false;
+}
+
 function isSafeArgument(
   arg: Expression | SpreadElement,
-  allowMemberExpressions: boolean
+  evaluatedEagerly: boolean,
+  scope: Scope.Scope | null
 ): boolean {
   if (arg.type === 'SpreadElement') {
-    return arg.argument.type === 'Identifier';
+    return (
+      evaluatedEagerly &&
+      arg.argument.type === 'Identifier' &&
+      isSafeArgument(arg.argument, evaluatedEagerly, scope)
+    );
   }
 
   switch (arg.type) {
     case 'Identifier':
+      return scope === null || !isReassigned(scope, arg);
+
     case 'Literal':
       return true;
 
     case 'TemplateLiteral':
       return arg.expressions.every((expr) =>
-        isSafeArgument(expr, allowMemberExpressions)
+        isSafeArgument(expr, evaluatedEagerly, scope)
       );
 
     case 'MemberExpression':
       if (
-        !allowMemberExpressions ||
+        !evaluatedEagerly ||
         arg.object.type === 'Super' ||
         arg.property.type === 'PrivateIdentifier'
       ) {
         return false;
       }
-      if (!isSafeArgument(arg.object, allowMemberExpressions)) {
+      if (!isSafeArgument(arg.object, evaluatedEagerly, scope)) {
         return false;
       }
       if (arg.computed) {
-        return isSafeArgument(arg.property, allowMemberExpressions);
+        return isSafeArgument(arg.property, evaluatedEagerly, scope);
       }
       return true;
 
     case 'ArrayExpression':
       return arg.elements.every(
-        (el) => el === null || isSafeArgument(el, allowMemberExpressions)
+        (el) => el === null || isSafeArgument(el, evaluatedEagerly, scope)
       );
 
     case 'ObjectExpression':
       return arg.properties.every((prop) => {
         if (prop.type === 'SpreadElement') {
-          return isSafeArgument(prop.argument, allowMemberExpressions);
+          return (
+            evaluatedEagerly &&
+            isSafeArgument(prop.argument, evaluatedEagerly, scope)
+          );
         }
         const valueType = prop.value.type;
         if (
@@ -82,28 +107,28 @@ function isSafeArgument(
         ) {
           return false;
         }
-        return isSafeArgument(prop.value, allowMemberExpressions);
+        return isSafeArgument(prop.value, evaluatedEagerly, scope);
       });
 
     case 'UnaryExpression':
       if (arg.operator === 'delete') {
         return false;
       }
-      return isSafeArgument(arg.argument, allowMemberExpressions);
+      return isSafeArgument(arg.argument, evaluatedEagerly, scope);
 
     case 'BinaryExpression':
     case 'LogicalExpression':
       return (
         arg.left.type !== 'PrivateIdentifier' &&
-        isSafeArgument(arg.left, allowMemberExpressions) &&
-        isSafeArgument(arg.right, allowMemberExpressions)
+        isSafeArgument(arg.left, evaluatedEagerly, scope) &&
+        isSafeArgument(arg.right, evaluatedEagerly, scope)
       );
 
     case 'ConditionalExpression':
       return (
-        isSafeArgument(arg.test, allowMemberExpressions) &&
-        isSafeArgument(arg.consequent, allowMemberExpressions) &&
-        isSafeArgument(arg.alternate, allowMemberExpressions)
+        isSafeArgument(arg.test, evaluatedEagerly, scope) &&
+        isSafeArgument(arg.consequent, evaluatedEagerly, scope) &&
+        isSafeArgument(arg.alternate, evaluatedEagerly, scope)
       );
 
     // CallExpression, NewExpression, etc.
@@ -169,12 +194,13 @@ export const preferTimerArgs: Rule.RuleModule = {
           const callExpression = firstArg.body;
           const callee = callExpression.callee;
           const callArgs = callExpression.arguments;
+          const scope = sourceCode.getScope(firstArg);
 
-          if (callee.type === 'MemberExpression') {
+          if (callee.type !== 'Identifier' || isReassigned(scope, callee)) {
             return;
           }
 
-          if (!callArgs.every((arg) => isSafeArgument(arg, false))) {
+          if (!callArgs.every((arg) => isSafeArgument(arg, false, scope))) {
             return;
           }
 
@@ -213,7 +239,7 @@ export const preferTimerArgs: Rule.RuleModule = {
           const bindArgs = bindCall.arguments.slice(1);
 
           // Check if any bind argument contains a call expression or other unsafe construct
-          if (!bindArgs.every((arg) => isSafeArgument(arg, true))) {
+          if (!bindArgs.every((arg) => isSafeArgument(arg, true, null))) {
             return;
           }
 

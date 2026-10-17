@@ -70,6 +70,24 @@ ruleTester.run('prefer-timer-args', preferTimerArgs, {
     'setTimeout(() => fn({key: obj.prop}), 100)',
     'setTimeout(() => fn(`${obj.prop}`), 100)',
 
+    // Reassigned bindings may change between scheduling and firing
+    'let a = 1; setTimeout(() => fn(a), 100); a = 2;',
+    'let a; a = 1; setTimeout(() => fn(a), 100);',
+    'let a = 1; setTimeout(() => fn(a + 1), 100); a++;',
+    'let a = 1; setTimeout(() => fn(`${a}`), 100); a += 1;',
+    'let fn = f; setTimeout(() => fn(), 100); fn = g;',
+    'function f(a) { a = 2; setTimeout(() => fn(a), 100); }',
+
+    // Spread contents may change between scheduling and firing
+    'setTimeout(() => fn(...args), 100)',
+    'setTimeout(() => fn([...arr]), 100)',
+    'setTimeout(() => fn({...obj}), 100)',
+
+    // Non-identifier callees may change between scheduling and firing
+    'setTimeout(() => getFn()(), 100)',
+    'setTimeout(() => (a || b)(), 100)',
+    'setTimeout(() => fns[0](), 100)',
+
     // window.setTimeout examples
     'window.setTimeout(doSomething, 100)',
     'window.setTimeout(() => { doSomething(a); }, 100)',
@@ -191,13 +209,47 @@ setTimeout(fn2, 200, b, c);`,
       ]
     },
 
-    // With spread arguments in the inner call
+    // bind() with spread arguments
     {
-      code: 'setTimeout(() => fn(...args), 100)',
-      output: 'setTimeout(fn, 100, ...args)',
+      code: 'setTimeout(fn.bind(null, ...args, [...arr], {...obj}), 100)',
+      output: 'setTimeout(fn, 100, ...args, [...arr], {...obj})',
       errors: [
         {
-          messageId: 'preferArgs'
+          messageId: 'preferArgs',
+          line: 1,
+          column: 1,
+          endLine: 1,
+          endColumn: 60
+        }
+      ]
+    },
+
+    // Bindings that are never reassigned
+    {
+      code: 'const a = 1; let b = 2; setTimeout(() => fn(a, b), 100);',
+      output: 'const a = 1; let b = 2; setTimeout(fn, 100, a, b);',
+      errors: [
+        {
+          messageId: 'preferArgs',
+          line: 1,
+          column: 25,
+          endLine: 1,
+          endColumn: 56
+        }
+      ]
+    },
+
+    // bind() allows re-assignments
+    {
+      code: 'let a = 1; setTimeout(fn.bind(null, a), 100); a = 2;',
+      output: 'let a = 1; setTimeout(fn, 100, a); a = 2;',
+      errors: [
+        {
+          messageId: 'preferArgs',
+          line: 1,
+          column: 12,
+          endLine: 1,
+          endColumn: 45
         }
       ]
     },
