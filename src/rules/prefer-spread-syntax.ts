@@ -1,5 +1,9 @@
 import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
-import {isArrayType} from '../utils/typescript.js';
+import {
+  getArrayKind,
+  isArrayType,
+  isIterableType
+} from '../utils/typescript.js';
 import {isSyntacticallyKnownArray} from '../utils/ast.js';
 
 type MessageIds =
@@ -168,10 +172,13 @@ export const preferSpreadSyntax: TSESLint.RuleModule<MessageIds, []> = {
                 }
               }
             } else {
-              const typed = isArrayType(arg, context);
+              const kind = getArrayKind(arg, context, true);
+              if (kind === 'ambiguous') {
+                return;
+              }
               if (
-                typed === true ||
-                (typed === undefined && isSyntacticallyKnownArray(arg))
+                kind === 'array' ||
+                (kind === 'unknown' && isSyntacticallyKnownArray(arg))
               ) {
                 parts.push(`...${sourceCode.getText(arg)}`);
               } else {
@@ -194,7 +201,8 @@ export const preferSpreadSyntax: TSESLint.RuleModule<MessageIds, []> = {
           const firstArg = node.arguments[0]!;
           if (
             firstArg.type !== 'SpreadElement' &&
-            firstArg.type !== 'ObjectExpression'
+            firstArg.type !== 'ObjectExpression' &&
+            isIterableType(firstArg, context) !== false
           ) {
             const iterableText = sourceCode.getText(firstArg);
             replacement = `[...${iterableText}]`;

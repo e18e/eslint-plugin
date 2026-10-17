@@ -387,7 +387,15 @@ typedRuleTester.run('prefer-spread-syntax (typed)', preferSpreadSyntax, {
     'const arr: number[] = [1]; arr.concat();',
 
     // Buffer.concat
-    'Buffer.concat([]);'
+    'Buffer.concat([]);',
+
+    // concat with an argument that may or may not be an array
+    'declare const arr: number[]; declare const x: number | number[]; arr.concat(x);',
+
+    // Array.from with non-iterable array-like
+    'declare const a: ArrayLike<number>; Array.from(a);',
+    'declare const a: {length: number; 0: string}; Array.from(a);',
+    'declare const a: number[] | ArrayLike<number>; Array.from(a);'
   ],
 
   invalid: [
@@ -464,6 +472,105 @@ typedRuleTester.run('prefer-spread-syntax (typed)', preferSpreadSyntax, {
           column: 31,
           endLine: 1,
           endColumn: 49
+        }
+      ]
+    },
+
+    // Array concat with a union of array arguments
+    {
+      code: 'declare const arr: number[]; declare const x: number[] | string[]; arr.concat(x);',
+      output:
+        'declare const arr: number[]; declare const x: number[] | string[]; [...arr, ...x];',
+      errors: [
+        {
+          messageId: 'preferSpreadArray',
+          line: 1,
+          column: 68,
+          endLine: 1,
+          endColumn: 81
+        }
+      ]
+    },
+
+    // Array concat with a typed array argument
+    {
+      code: 'declare const arr: number[]; declare const x: Uint8Array; arr.concat(x);',
+      output:
+        'declare const arr: number[]; declare const x: Uint8Array; [...arr, x];',
+      errors: [
+        {
+          messageId: 'preferSpreadArray',
+          line: 1,
+          column: 59,
+          endLine: 1,
+          endColumn: 72
+        }
+      ]
+    },
+
+    // Array.from with iterables
+    {
+      code: 'declare const s: Set<number>; Array.from(s);',
+      output: 'declare const s: Set<number>; [...s];',
+      errors: [
+        {
+          messageId: 'preferSpreadArrayFrom',
+          line: 1,
+          column: 31,
+          endLine: 1,
+          endColumn: 44
+        }
+      ]
+    },
+    {
+      code: 'declare const s: string; Array.from(s);',
+      output: 'declare const s: string; [...s];',
+      errors: [
+        {
+          messageId: 'preferSpreadArrayFrom',
+          line: 1,
+          column: 26,
+          endLine: 1,
+          endColumn: 39
+        }
+      ]
+    },
+    {
+      code: 'declare const s: Iterable<number>; Array.from(s);',
+      output: 'declare const s: Iterable<number>; [...s];',
+      errors: [
+        {
+          messageId: 'preferSpreadArrayFrom',
+          line: 1,
+          column: 36,
+          endLine: 1,
+          endColumn: 49
+        }
+      ]
+    },
+    {
+      code: 'function f<T extends number[]>(s: T) { Array.from(s); }',
+      output: 'function f<T extends number[]>(s: T) { [...s]; }',
+      errors: [
+        {
+          messageId: 'preferSpreadArrayFrom',
+          line: 1,
+          column: 40,
+          endLine: 1,
+          endColumn: 53
+        }
+      ]
+    },
+    {
+      code: 'declare const s: any; Array.from(s);',
+      output: 'declare const s: any; [...s];',
+      errors: [
+        {
+          messageId: 'preferSpreadArrayFrom',
+          line: 1,
+          column: 23,
+          endLine: 1,
+          endColumn: 36
         }
       ]
     }

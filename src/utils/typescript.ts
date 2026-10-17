@@ -55,12 +55,83 @@ const typedArrayTypes = [
   'BigUint64Array'
 ];
 
+export type ArrayKind = 'unknown' | 'ambiguous' | 'array' | 'non-array';
+
+export function getArrayKind(
+  node: TSESTree.Node,
+  context: Readonly<TSESLint.RuleContext<string, unknown[]>>,
+  strict = false
+): ArrayKind {
+  const services = tryGetTypedParserServices(context);
+  if (!services) {
+    return 'unknown';
+  }
+
+  const type = services.getTypeAtLocation(node);
+  if (!type) {
+    return 'unknown';
+  }
+
+  const checker = services.program.getTypeChecker();
+  const types = type.isUnion() ? type.types : [type];
+  let arrayCount = 0;
+
+  for (const t of types) {
+    if (checker.isArrayType(t) || checker.isTupleType(t)) {
+      arrayCount++;
+      continue;
+    }
+
+    if (strict) {
+      continue;
+    }
+
+    const typeString = checker.typeToString(t);
+    if (typedArrayTypes.some((name) => typeString.startsWith(name))) {
+      arrayCount++;
+    }
+  }
+
+  if (arrayCount === 0) {
+    return 'non-array';
+  }
+  return arrayCount === types.length ? 'array' : 'ambiguous';
+}
+
 /**
  * Checks if a node's type is an Array type (Array, tuple, or typed array)
  * Returns undefined if types are unavailable, letting callers choose their
  * own default behaviour
  */
 export function isArrayType(
+  node: TSESTree.Node,
+  context: Readonly<TSESLint.RuleContext<string, unknown[]>>
+): boolean | undefined {
+  const kind = getArrayKind(node, context);
+  return kind === 'unknown' ? undefined : kind === 'array';
+}
+
+function hasIteratorMember(type: ts.Type, checker: ts.TypeChecker): boolean {
+  if (type.isUnion()) {
+    return type.types.every((t) => hasIteratorMember(t, checker));
+  }
+
+  if (type.isIntersection()) {
+    return type.types.some((t) => hasIteratorMember(t, checker));
+  }
+
+  // Iterators are named `__@iterator@<id>` internally
+  return checker
+    .getPropertiesOfType(checker.getApparentType(type))
+    .some((prop) => prop.getName().startsWith('__@iterator'));
+}
+
+/**
+ * Checks if a node's type is iterable (has a `[Symbol.iterator]` member)
+ * Returns undefined if types are unavailable or the type is `any`/`unknown`,
+ * letting callers choose their own default behaviour
+ */
+export function isIterableType(
   node: TSESTree.Node,
   context: Readonly<TSESLint.RuleContext<string, unknown[]>>
 ): boolean | undefined {
@@ -74,22 +145,12 @@ export function isArrayType(
     return undefined;
   }
 
-  const checker = services.program.getTypeChecker();
-
-  if (checker.isArrayType(type)) {
-    return true;
+  // ts.TypeFlags.Any | ts.TypeFlags.Unknown
+  if (type.flags & (1 | 2)) {
+    return undefined;
   }
 
-  if (checker.isTupleType(type)) {
-    return true;
-  }
-
-  const typeString = checker.typeToString(type);
-  if (typedArrayTypes.some((t) => typeString.startsWith(t))) {
-    return true;
-  }
-
-  return false;
+  return hasIteratorMember(type, services.program.getTypeChecker());
 }
 
 const setTypePattern = /^(Readonly)?Set</;
