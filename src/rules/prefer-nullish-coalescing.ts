@@ -24,6 +24,28 @@ function isUndefinedIdentifier(node: Expression): boolean {
   return node.type === 'Identifier' && node.name === 'undefined';
 }
 
+function needsParensForNullishOperand(node: Expression): boolean {
+  switch (node.type) {
+    case 'LogicalExpression':
+    case 'ConditionalExpression':
+    case 'AssignmentExpression':
+    case 'SequenceExpression':
+    case 'ArrowFunctionExpression':
+    case 'YieldExpression':
+      return true;
+    default:
+      return false;
+  }
+}
+
+function getParenthesisedNodeText(
+  sourceCode: SourceCode,
+  node: Expression
+): string {
+  const text = sourceCode.getText(node);
+  return needsParensForNullishOperand(node) ? `(${text})` : text;
+}
+
 type NullishCheckResult = {
   value: Expression;
   checksForNullish: boolean;
@@ -117,8 +139,11 @@ export const preferNullishCoalescing: Rule.RuleModule = {
               node,
               messageId: 'preferNullishCoalescing',
               fix(fixer) {
-                const valueText = sourceCode.getText(value);
-                const defaultText = sourceCode.getText(defaultNode);
+                const valueText = getParenthesisedNodeText(sourceCode, value);
+                const defaultText = getParenthesisedNodeText(
+                  sourceCode,
+                  defaultNode
+                );
                 return fixer.replaceText(
                   node,
                   `${valueText} ?? ${defaultText}`

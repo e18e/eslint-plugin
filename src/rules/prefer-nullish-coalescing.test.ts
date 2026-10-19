@@ -188,6 +188,51 @@ ruleTester.run('prefer-nullish-coalescing', preferNullishCoalescing, {
       ]
     },
 
+    // Default is a logical expression
+    {
+      code: 'const r = x == null ? a || b : x;',
+      output: 'const r = x ?? (a || b);',
+      errors: [
+        {
+          messageId: 'preferNullishCoalescing',
+          line: 1,
+          column: 11,
+          endLine: 1,
+          endColumn: 33
+        }
+      ]
+    },
+
+    // Default is a conditional expression
+    {
+      code: 'const r = x == null ? (a ? b : c) : x;',
+      output: 'const r = x ?? (a ? b : c);',
+      errors: [
+        {
+          messageId: 'preferNullishCoalescing',
+          line: 1,
+          column: 11,
+          endLine: 1,
+          endColumn: 38
+        }
+      ]
+    },
+
+    // Value is a parenthesized logical expression
+    {
+      code: 'const r = (a || b) == null ? d : (a || b);',
+      output: 'const r = (a || b) ?? d;',
+      errors: [
+        {
+          messageId: 'preferNullishCoalescing',
+          line: 1,
+          column: 11,
+          endLine: 1,
+          endColumn: 42
+        }
+      ]
+    },
+
     // If statement: non-block body with semicolon
     {
       code: 'if (x == null) x = 5;',
