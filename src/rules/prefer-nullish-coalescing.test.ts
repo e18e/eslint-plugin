@@ -137,7 +137,7 @@ ruleTester.run('prefer-nullish-coalescing', preferNullishCoalescing, {
     // If statement: x === null || x === undefined
     {
       code: 'if (x === null || x === undefined) { x = 5 }',
-      output: 'x ??= 5',
+      output: 'x ??= 5;',
       errors: [
         {
           messageId: 'preferNullishCoalescingAssignment',
@@ -150,7 +150,7 @@ ruleTester.run('prefer-nullish-coalescing', preferNullishCoalescing, {
     // If statement: x === undefined || x === null
     {
       code: 'if (x === undefined || x === null) { x = 5 }',
-      output: 'x ??= 5',
+      output: 'x ??= 5;',
       errors: [
         {
           messageId: 'preferNullishCoalescingAssignment',
@@ -163,7 +163,7 @@ ruleTester.run('prefer-nullish-coalescing', preferNullishCoalescing, {
     // If statement: loose == null
     {
       code: 'if (x == null) { x = 5 }',
-      output: 'x ??= 5',
+      output: 'x ??= 5;',
       errors: [
         {
           messageId: 'preferNullishCoalescingAssignment',
@@ -178,12 +178,44 @@ ruleTester.run('prefer-nullish-coalescing', preferNullishCoalescing, {
       code: `if (x === null || x === undefined) {
   x = 5
 }`,
-      output: 'x ??= 5',
+      output: 'x ??= 5;',
       errors: [
         {
           messageId: 'preferNullishCoalescingAssignment',
           line: 1,
           column: 1
+        }
+      ]
+    },
+
+    // If statement: non-block body with semicolon
+    {
+      code: 'if (x == null) x = 5;',
+      output: 'x ??= 5;',
+      errors: [
+        {
+          messageId: 'preferNullishCoalescingAssignment',
+          line: 1,
+          column: 1,
+          endLine: 1,
+          endColumn: 22
+        }
+      ]
+    },
+
+    // If statement: followed by a line starting with an array literal
+    {
+      code: `if (x == null) { x = 5 }
+[a, b].forEach(fn)`,
+      output: `x ??= 5;
+[a, b].forEach(fn)`,
+      errors: [
+        {
+          messageId: 'preferNullishCoalescingAssignment',
+          line: 1,
+          column: 1,
+          endLine: 1,
+          endColumn: 25
         }
       ]
     },
@@ -195,7 +227,7 @@ const b = y == null ? 'fallback' : y;
 if (z === null || z === undefined) { z = 10 }`,
       output: `const a = x ?? 'default';
 const b = y ?? 'fallback';
-z ??= 10`,
+z ??= 10;`,
       errors: [
         {
           messageId: 'preferNullishCoalescing',

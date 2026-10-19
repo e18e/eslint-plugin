@@ -180,7 +180,7 @@ export const preferNullishCoalescing: Rule.RuleModule = {
             fix(fixer) {
               const leftText = sourceCode.getText(assignment.left);
               const rightText = sourceCode.getText(assignment.right);
-              return fixer.replaceText(node, `${leftText} ??= ${rightText}`);
+              return fixer.replaceText(node, `${leftText} ??= ${rightText};`);
             }
           });
         }
