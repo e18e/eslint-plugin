@@ -1,0 +1,20 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Oxlint integration" type="JavaScriptTestRunnerVitest" factoryName="Vitest">
+    <config value="$PROJECT_DIR$/vitest.config.ts" />
+    <node-interpreter value="project" />
+    <vitest-package value="$PROJECT_DIR$/node_modules/vitest" />
+    <working-dir value="$PROJECT_DIR$" />
+    <scope-kind value="TEST_FILE" />
+    <test-file value="$PROJECT_DIR$/src/test/oxlint-integration.test.ts" />
+    <method v="2">
+      <option name="NpmBeforeRunTask" enabled="true">
+        <package-json value="$PROJECT_DIR$/package.json" />
+        <command value="run" />
+        <scripts>
+          <script value="build" />
+        </scripts>
+        <node-interpreter value="project" />
+      </option>
+    </method>
+  </configuration>
+</component>

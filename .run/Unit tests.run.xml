@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Unit tests" type="JavaScriptTestRunnerVitest" factoryName="Vitest">
+    <config value="$PROJECT_DIR$/vitest.config.ts" />
+    <node-interpreter value="project" />
+    <vitest-package value="$PROJECT_DIR$/node_modules/vitest" />
+    <working-dir value="$PROJECT_DIR$" />
+    <vitest-options value="--exclude src/test/oxlint-integration.test.ts" />
+    <scope-kind value="ALL" />
+    <method v="2" />
+  </configuration>
+</component>
