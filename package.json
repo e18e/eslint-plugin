@@ -26,6 +26,17 @@
   "author": "James Garbutt (https://github.com/43081j)",
   "type": "module",
   "main": "lib/main.js",
+  "exports": {
+    ".": {
+      "types": "./lib/main.d.ts",
+      "default": "./lib/main.js"
+    },
+    "./baseline": {
+      "types": "./lib/baseline.d.ts",
+      "default": "./lib/baseline.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",

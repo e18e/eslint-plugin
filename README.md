@@ -75,6 +75,48 @@ Copying these rules into your `rules` object will achieve the same effect as usi
 > Our type-aware rules depend on TypeScript ESLint's parser, which means they
 > will not work with oxlint at this time.
 
+## Baseline rules
+
+The Baseline rules need [`baseline-detector`](https://github.com/43081j/baseline-detector), an optional peer dependency, so they live in their own entry:
+
+```sh
+npm install --save-dev baseline-detector
+```
+
+```js
+import {config as baselineConfig} from '@e18e/eslint-plugin/baseline';
+
+export default [baselineConfig];
+```
+
+Or register the plugin yourself, it's the full `e18e` plugin with the Baseline rules added:
+
+```js
+import e18e from '@e18e/eslint-plugin/baseline';
+
+export default [
+  {
+    plugins: {
+      e18e
+    },
+    rules: {
+      'e18e/baseline-target': 'error'
+    }
+  }
+];
+```
+
+With oxlint:
+
+```json
+{
+  "jsPlugins": ["@e18e/eslint-plugin/baseline"],
+  "rules": {
+    "e18e/baseline-target": "error"
+  }
+}
+```
+
 ## Linting `package.json`
 
 Some rules (e.g. `ban-dependencies`) can be used against your `package.json`.

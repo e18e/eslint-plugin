@@ -62,4 +62,8 @@ describe('main plugin', () => {
     expect(plugin.configs.moduleReplacements).toBeDefined();
     expect(plugin.configs.performanceImprovements).toBeDefined();
   });
+
+  it('should not include baseline-target without the baseline entry', () => {
+    expect(plugin.rules).not.toHaveProperty('baseline-target');
+  });
 });
