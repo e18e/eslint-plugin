@@ -204,3 +204,124 @@ export function isStringType(
 
   return checker.isTypeAssignableTo(type, stringType);
 }
+
+/**
+ * Gets the element types of an array or tuple node. Type parameters are
+ * resolved to their constraint. Returns undefined if types are unavailable or
+ * any part of the type is not an array/tuple
+ */
+function getArrayElementTypes(
+  node: TSESTree.Node,
+  context: Readonly<TSESLint.RuleContext<string, unknown[]>>
+):
+  | {elements: ts.Type[]; checker: ts.TypeChecker; strictNullChecks: boolean}
+  | undefined {
+  const services = tryGetTypedParserServices(context);
+  if (!services) {
+    return undefined;
+  }
+
+  let type: ts.Type | undefined = services.getTypeAtLocation(node);
+  if (!type) {
+    return undefined;
+  }
+
+  const checker = services.program.getTypeChecker();
+  if (type.isTypeParameter()) {
+    type = checker.getBaseConstraintOfType(type);
+    if (!type) {
+      return undefined;
+    }
+  }
+
+  const elements: ts.Type[] = [];
+  for (const t of type.isUnion() ? type.types : [type]) {
+    if (!checker.isArrayType(t) && !checker.isTupleType(t)) {
+      return undefined;
+    }
+    elements.push(...checker.getTypeArguments(t as ts.TypeReference));
+  }
+
+  const options = services.program.getCompilerOptions();
+  const strictNullChecks = options.strictNullChecks ?? options.strict ?? false;
+
+  return {elements, checker, strictNullChecks};
+}
+
+/**
+ * Checks if `type` may hold one of the `candidates` values. Type parameters
+ * are checked through their constraint (no constraint means any value)
+ */
+function canTypeHoldAny(
+  type: ts.Type,
+  candidates: ts.Type[],
+  checker: ts.TypeChecker
+): boolean {
+  if (type.isUnion()) {
+    return type.types.some((t) => canTypeHoldAny(t, candidates, checker));
+  }
+
+  if (type.isTypeParameter()) {
+    const constraint = checker.getBaseConstraintOfType(type);
+    return (
+      constraint === undefined ||
+      canTypeHoldAny(constraint, candidates, checker)
+    );
+  }
+
+  return candidates.some((c) => checker.isTypeAssignableTo(c, type));
+}
+
+/**
+ * Checks if an array node may contain falsy elements (0, '', false, null,
+ * undefined, 0n, NaN). Returns undefined if types are unavailable or the
+ * node isn't known to be an array, letting callers choose their own default
+ * behaviour.
+ *
+ * Branded primitives (`string & {__brand: 'x'}`) and string enums with an
+ * empty member are treated as non-falsy, since the falsy literal is not
+ * assignable to them.
+ */
+export function canArrayContainFalsy(
+  node: TSESTree.Node,
+  context: Readonly<TSESLint.RuleContext<string, unknown[]>>
+): boolean | undefined {
+  const result = getArrayElementTypes(node, context);
+  if (!result) {
+    return undefined;
+  }
+
+  const {elements, checker, strictNullChecks} = result;
+  const candidates = [
+    checker.getFalseType(),
+    checker.getNumberLiteralType(0),
+    checker.getStringLiteralType(''),
+    checker.getBigIntLiteralType({negative: false, base10Value: '0'})
+  ];
+  // Without strictNullChecks, null and undefined are assignable to every
+  // type, so they can't tell us anything
+  if (strictNullChecks) {
+    candidates.push(checker.getNullType(), checker.getUndefinedType());
+  }
+
+  return elements.some((t) => canTypeHoldAny(t, candidates, checker));
+}
+
+/**
+ * Checks if an array node may contain `undefined` elements. Returns undefined
+ * if types are unavailable, the node isn't known to be an array, or
+ * strictNullChecks is off
+ */
+export function canArrayContainUndefined(
+  node: TSESTree.Node,
+  context: Readonly<TSESLint.RuleContext<string, unknown[]>>
+): boolean | undefined {
+  const result = getArrayElementTypes(node, context);
+  if (!result || !result.strictNullChecks) {
+    return undefined;
+  }
+
+  const {elements, checker} = result;
+  const candidates = [checker.getUndefinedType()];
+  return elements.some((t) => canTypeHoldAny(t, candidates, checker));
+}

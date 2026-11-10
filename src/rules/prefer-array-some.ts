@@ -1,4 +1,5 @@
 import type {Rule} from 'eslint';
+import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
 import type {
   BinaryExpression,
   BinaryOperator,
@@ -17,6 +18,10 @@ import {
   isNullish,
   needsParensForPropertyAccess
 } from '../utils/ast.js';
+import {
+  canArrayContainFalsy,
+  canArrayContainUndefined
+} from '../utils/typescript.js';
 
 function isIdentifierOrStringLiteral(
   identifierName: string,
@@ -53,18 +58,55 @@ function isFilterLengthCall(node: Expression): node is MemberExpression {
   );
 }
 
+/**
+ * How the result of `find()` is checked: by truthiness (`!arr.find(fn)`,
+ * `if (arr.find(fn))`) or by comparing with `undefined`
+ */
+type FindCheck = 'truthy' | 'undefined';
+
+/**
+ * With type information, checks whether replacing `find()` with `some()`
+ * would change the result because a matching element can itself be falsy
+ * (for truthiness checks) or `undefined` (for `=== undefined` checks).
+ * Without type information every array could contain such elements, so we
+ * accept that risk and report anyway.
+ */
+function isUnsafeFindReplacement(
+  context: Rule.RuleContext,
+  arrayNode: Node,
+  check: FindCheck
+): boolean {
+  const tsContext = context as unknown as Readonly<
+    TSESLint.RuleContext<string, unknown[]>
+  >;
+  const tsNode = arrayNode as unknown as TSESTree.Node;
+  const unsafe =
+    check === 'truthy'
+      ? canArrayContainFalsy(tsNode, tsContext)
+      : canArrayContainUndefined(tsNode, tsContext);
+  return unsafe === true;
+}
+
 function reportFind(
   context: Rule.RuleContext,
   node: Node,
   findCall: CallExpression,
-  shouldNegate: boolean
+  shouldNegate: boolean,
+  check: FindCheck
 ) {
   if (findCall.callee.type !== 'MemberExpression') {
     return;
   }
 
-  const sourceCode = context.sourceCode;
   const arrayNode = findCall.callee.object;
+  if (
+    arrayNode.type !== 'Super' &&
+    isUnsafeFindReplacement(context, arrayNode, check)
+  ) {
+    return;
+  }
+
+  const sourceCode = context.sourceCode;
   const rawArrayText = sourceCode.getText(arrayNode);
   const arrayText = needsParensForPropertyAccess(arrayNode)
     ? `(${rawArrayText})`
@@ -162,7 +204,7 @@ function checkBinaryExpression(
         return;
       }
       const shouldNegate = operator === '===';
-      reportFind(context, node, findCall, shouldNegate);
+      reportFind(context, node, findCall, shouldNegate, 'undefined');
       return;
     }
   } else if (filterLengthCall !== undefined) {
@@ -202,7 +244,7 @@ function checkUnaryExpression(
 ) {
   // !arr.find(fn) -> !arr.some(fn)
   if (node.operator === '!' && isFindCall(node.argument)) {
-    reportFind(context, node, node.argument, true);
+    reportFind(context, node, node.argument, true, 'truthy');
     return;
   }
 
@@ -219,7 +261,7 @@ function checkUnaryExpression(
     node.argument.operator === '!' &&
     isFindCall(node.argument.argument)
   ) {
-    reportFind(context, node, node.argument.argument, false);
+    reportFind(context, node, node.argument.argument, false, 'truthy');
     return;
   }
 
@@ -281,7 +323,7 @@ export const preferArraySome: Rule.RuleModule = {
         }
 
         if (isInBooleanContext(node)) {
-          reportFind(context, node, node, false);
+          reportFind(context, node, node, false, 'truthy');
         }
       },
       MemberExpression(node: MemberExpression & Rule.NodeParentExtension) {

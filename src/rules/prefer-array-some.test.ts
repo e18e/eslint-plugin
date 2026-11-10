@@ -1,5 +1,24 @@
 import {RuleTester} from 'eslint';
+import {RuleTester as TSRuleTester} from '@typescript-eslint/rule-tester';
 import {preferArraySome} from './prefer-array-some.js';
+import * as path from 'node:path';
+import {fileURLToPath} from 'node:url';
+
+const rootDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../..'
+);
+const typedRuleTester = new TSRuleTester({
+  languageOptions: {
+    parserOptions: {
+      projectService: {
+        allowDefaultProject: ['*.ts'],
+        defaultProject: './tsconfig.json'
+      },
+      tsconfigRootDir: rootDir
+    }
+  }
+});
 
 const ruleTester = new RuleTester({
   languageOptions: {
@@ -827,6 +846,100 @@ ruleTester.run('prefer-array-some', preferArraySome, {
           endColumn: 33
         }
       ]
+    }
+  ]
+});
+
+// source: https://github.com/e18e/eslint-plugin/issues/168 (maintainer: "with
+// types, we could possibly check if the type contains falsy types and skip it")
+typedRuleTester.run('prefer-array-some (typed)', preferArraySome as never, {
+  valid: [
+    // elements can be falsy, so find() and some() can disagree
+    'declare const ids: number[]; if (ids.find((id) => id === 0)) {}',
+    'declare const names: string[]; if (!names.find(fn)) {}',
+    'declare const flags: boolean[]; const ok = !!flags.find(fn);',
+    'declare const items: (object | null)[]; if (items.find(fn)) {}',
+    'declare const values: bigint[]; if (values.find(fn)) {}',
+    'declare const values: unknown[]; if (values.find(fn)) {}',
+    'declare const values: any[]; if (values.find(fn)) {}',
+    'declare const pair: [number, string]; if (pair.find(fn)) {}',
+    'declare const ids: number[] | string[]; if (ids.find(fn)) {}',
+    'function f<T>(xs: T[]) { if (xs.find(fn)) {} }',
+    'function f<T extends number>(xs: T[]) { if (xs.find(fn)) {} }',
+    'declare const ids: readonly (0 | 1)[]; if (ids.find(fn)) {}',
+    // elements can be undefined, so `=== undefined` and some() can disagree
+    'declare const xs: (string | undefined)[]; if (xs.find(fn) !== undefined) {}',
+    'declare const xs: unknown[]; if (xs.find(fn) === undefined) {}',
+    'function f<T>(xs: T[]) { if (xs.find(fn) === undefined) {} }',
+    'function f<T extends number | undefined>(xs: T[]) { if (xs.find(fn) !== undefined) {} }',
+    'declare const xs: [number?]; if (xs.find(fn) === undefined) {}',
+    // arrays typed as a type parameter use its constraint
+    'function f<T extends number[]>(xs: T) { if (xs.find(fn)) {} }',
+    // numeric enum with a 0 member
+    'enum E { A, B } declare const xs: E[]; if (xs.find(fn)) {}'
+  ],
+  invalid: [
+    {
+      code: 'declare const users: {id: number}[]; if (users.find(fn)) {}',
+      output: 'declare const users: {id: number}[]; if (users.some(fn)) {}',
+      errors: [{messageId: 'preferArraySome'}]
+    },
+    {
+      code: 'declare const ids: (1 | 2)[]; if (!ids.find(fn)) {}',
+      output: 'declare const ids: (1 | 2)[]; if (!ids.some(fn)) {}',
+      errors: [{messageId: 'preferArraySome'}]
+    },
+    {
+      code: 'declare const xs: string[]; const has = xs.find(fn) !== undefined;',
+      output: 'declare const xs: string[]; const has = xs.some(fn);',
+      errors: [{messageId: 'preferArraySome'}]
+    },
+    {
+      code: 'declare const xs: (number | null)[]; const none = xs.find(fn) === undefined;',
+      output: 'declare const xs: (number | null)[]; const none = !xs.some(fn);',
+      errors: [{messageId: 'preferArraySome'}]
+    },
+    {
+      code: 'function f<T extends object>(xs: T[]) { if (xs.find(fn)) {} }',
+      output: 'function f<T extends object>(xs: T[]) { if (xs.some(fn)) {} }',
+      errors: [{messageId: 'preferArraySome'}]
+    },
+    {
+      code: 'declare const xs: Map<string, number>[]; if (!!xs.find(fn)) {}',
+      output: 'declare const xs: Map<string, number>[]; if (xs.some(fn)) {}',
+      errors: [{messageId: 'preferArraySome'}]
+    },
+    {
+      code: 'enum E { A = 1, B = 2 } declare const xs: E[]; if (xs.find(fn)) {}',
+      output:
+        'enum E { A = 1, B = 2 } declare const xs: E[]; if (xs.some(fn)) {}',
+      errors: [{messageId: 'preferArraySome'}]
+    },
+    {
+      code: 'declare const xs: readonly object[]; if (xs.find(fn)) {}',
+      output: 'declare const xs: readonly object[]; if (xs.some(fn)) {}',
+      errors: [{messageId: 'preferArraySome'}]
+    },
+    {
+      code: 'declare const xs: readonly [Date, RegExp]; if (!xs.find(fn)) {}',
+      output: 'declare const xs: readonly [Date, RegExp]; if (!xs.some(fn)) {}',
+      errors: [{messageId: 'preferArraySome'}]
+    },
+    {
+      code: 'function f<T extends object[]>(xs: T) { if (xs.find(fn)) {} }',
+      output: 'function f<T extends object[]>(xs: T) { if (xs.some(fn)) {} }',
+      errors: [{messageId: 'preferArraySome'}]
+    },
+    {
+      code: 'function f<T extends object>(xs: T[]) { if (xs.find(fn) === undefined) {} }',
+      output: 'function f<T extends object>(xs: T[]) { if (!xs.some(fn)) {} }',
+      errors: [{messageId: 'preferArraySome'}]
+    },
+    // filter().length is not affected by falsy elements
+    {
+      code: 'declare const ids: number[]; if (ids.filter(fn).length > 0) {}',
+      output: 'declare const ids: number[]; if (ids.some(fn)) {}',
+      errors: [{messageId: 'preferArraySome'}]
     }
   ]
 });
