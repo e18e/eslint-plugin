@@ -47,7 +47,7 @@ export const preferArrayToSorted: TSESLint.RuleModule<MessageIds, []> = {
           }
 
           if (
-            arrayType !== true &&
+            !arrayType &&
             resolvesToKnownNonArrayCopySource(arrayNode, context)
           ) {
             return;

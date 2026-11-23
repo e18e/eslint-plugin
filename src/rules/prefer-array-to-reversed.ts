@@ -47,7 +47,7 @@ export const preferArrayToReversed: TSESLint.RuleModule<MessageIds, []> = {
           }
 
           if (
-            arrayType !== true &&
+            !arrayType &&
             resolvesToKnownNonArrayCopySource(arrayNode, context)
           ) {
             return;
