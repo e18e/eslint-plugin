@@ -25,6 +25,14 @@ const ruleTester = new RuleTester({
     sourceType: 'module'
   }
 });
+const tsSyntaxRuleTester = new TSRuleTester({
+  languageOptions: {
+    parserOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module'
+    }
+  }
+});
 
 ruleTester.run(
   'prefer-array-to-reversed (untyped)',
@@ -43,7 +51,18 @@ ruleTester.run(
 
       // reversing other results
       'const filtered = arr.filter(x => x > 0).reverse();',
-      'const mapped = arr.map(x => x * 2).reverse();'
+      'const mapped = arr.map(x => x * 2).reverse();',
+
+      // spreading non-array iterables
+      'const reversed = [...new Set([1, 2, 3])].reverse();',
+      'const reversed = [...new Set(arr)].reverse();',
+      'const reversed = [...new Map()].reverse();',
+      'const seen = new Set(); const reversed = [...seen].reverse();',
+      'let seen = new Set(); const reversed = [...seen].reverse();',
+      'const entries = new Map(); const reversed = [...entries].reverse();',
+      'const reversed = [...items.entries()].reverse();',
+      'const reversed = [...items.keys()].reverse();',
+      'const reversed = [...items.values()].reverse();'
     ],
 
     invalid: [
@@ -214,6 +233,39 @@ ruleTester.run(
         code: 'const reversed = obj.arr?.concat().reverse();',
         output: 'const reversed = obj.arr?.toReversed();',
         errors: [{messageId: 'preferToReversed', data: {array: 'obj.arr'}}]
+      },
+
+      // Object.entries() returns an array
+      {
+        code: 'const reversed = [...Object.entries(obj)].reverse();',
+        output: 'const reversed = Object.entries(obj).toReversed();',
+        errors: [
+          {
+            messageId: 'preferToReversed',
+            data: {array: 'Object.entries(obj)'}
+          }
+        ]
+      }
+    ]
+  }
+);
+
+tsSyntaxRuleTester.run(
+  'prefer-array-to-reversed (typescript syntax)',
+  preferArrayToReversed,
+  {
+    valid: [
+      'function reverseItems<T>(items: Iterable<T>) { return [...items].reverse(); }',
+      'function reverseItems(items: Map<string, number>) { return [...items.entries()].reverse(); }',
+      'const items: Set<string> = new Set(); const reversed = [...items].reverse();',
+      'let items: Iterable<string>; const reversed = [...items].reverse();'
+    ],
+    invalid: [
+      {
+        code: 'const items: string[] = []; const reversed = [...items].reverse();',
+        output:
+          'const items: string[] = []; const reversed = items.toReversed();',
+        errors: [{messageId: 'preferToReversed'}]
       }
     ]
   }

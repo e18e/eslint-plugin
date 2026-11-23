@@ -241,3 +241,117 @@ export function formatArguments(
     })
     .join(', ');
 }
+
+const NON_ARRAY_COPY_SOURCE_CTORS = new Set(['Set', 'Map']);
+const NON_ARRAY_COPY_SOURCE_TYPES = new Set([
+  'Iterable',
+  'IterableIterator',
+  'Iterator',
+  'Map',
+  'ReadonlyMap',
+  'ReadonlySet',
+  'Set',
+  'URLSearchParams'
+]);
+const ITERATOR_RETURNING_METHODS = new Set(['entries', 'keys', 'values']);
+
+function getTypeReferenceName(node: TSESTree.Node): string | null {
+  if (node.type !== 'TSTypeReference') {
+    return null;
+  }
+
+  const {typeName} = node;
+  if (typeName.type === 'Identifier') {
+    return typeName.name;
+  }
+  if (typeName.type === 'TSQualifiedName') {
+    return typeName.right.name;
+  }
+  return null;
+}
+
+function hasKnownNonArrayTypeAnnotation(node: TSESTree.BindingName): boolean {
+  const typeAnnotation = node.typeAnnotation;
+  if (!typeAnnotation) {
+    return false;
+  }
+
+  const annotation = typeAnnotation.typeAnnotation;
+  if (annotation.type === 'TSUnionType') {
+    return annotation.types.some((typeNode) => hasKnownNonArrayType(typeNode));
+  }
+  return hasKnownNonArrayType(annotation);
+}
+
+function hasKnownNonArrayType(node: TSESTree.Node): boolean {
+  const typeName = getTypeReferenceName(node);
+  return typeName !== null && NON_ARRAY_COPY_SOURCE_TYPES.has(typeName);
+}
+
+function isIteratorReturningCall(node: TSESTree.Node): boolean {
+  return (
+    node.type === 'CallExpression' &&
+    node.callee.type === 'MemberExpression' &&
+    node.callee.property.type === 'Identifier' &&
+    ITERATOR_RETURNING_METHODS.has(node.callee.property.name) &&
+    !(
+      node.callee.object.type === 'Identifier' &&
+      node.callee.object.name === 'Object'
+    )
+  );
+}
+
+function isKnownNonArrayCopySource(node: TSESTree.Node): boolean {
+  return (
+    isIteratorReturningCall(node) ||
+    (node.type === 'NewExpression' &&
+      node.callee.type === 'Identifier' &&
+      NON_ARRAY_COPY_SOURCE_CTORS.has(node.callee.name))
+  );
+}
+
+/**
+ * Whether the node is (or is a variable holding) a known non-array iterable,
+ * such as a `Set`, `Map` or iterator, which doesn't have the array copy methods
+ */
+export function resolvesToKnownNonArrayCopySource(
+  node: TSESTree.Node,
+  context: Readonly<TSESLint.RuleContext<string, unknown[]>>
+): boolean {
+  if (isKnownNonArrayCopySource(node)) {
+    return true;
+  }
+
+  if (node.type !== 'Identifier') {
+    return false;
+  }
+
+  const variable = context.sourceCode
+    .getScope(node)
+    .references.find((ref) => ref.identifier === node)?.resolved;
+
+  if (!variable || variable.defs.length !== 1) {
+    return false;
+  }
+
+  const def = variable.defs[0];
+  if (!def || (def.type !== 'Variable' && def.type !== 'Parameter')) {
+    return false;
+  }
+
+  if (hasKnownNonArrayTypeAnnotation(def.name)) {
+    return true;
+  }
+
+  if (def.type !== 'Variable' || def.node.type !== 'VariableDeclarator') {
+    return false;
+  }
+
+  const init = def.node.init;
+
+  return (
+    init !== null &&
+    isKnownNonArrayCopySource(init) &&
+    variable.references.every((ref) => !ref.isWrite() || ref.writeExpr === init)
+  );
+}
