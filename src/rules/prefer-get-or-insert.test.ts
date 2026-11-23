@@ -1,5 +1,24 @@
 import {RuleTester} from 'eslint';
+import {RuleTester as TSRuleTester} from '@typescript-eslint/rule-tester';
 import {preferGetOrInsert} from './prefer-get-or-insert.js';
+import * as path from 'node:path';
+import {fileURLToPath} from 'node:url';
+
+const rootDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../..'
+);
+const typedRuleTester = new TSRuleTester({
+  languageOptions: {
+    parserOptions: {
+      projectService: {
+        allowDefaultProject: ['*.ts'],
+        defaultProject: './tsconfig.json'
+      },
+      tsconfigRootDir: rootDir
+    }
+  }
+});
 
 const ruleTester = new RuleTester({
   languageOptions: {
@@ -125,6 +144,89 @@ ruleTester.run('prefer-get-or-insert', preferGetOrInsert as never, {
         let v = map.getOrInsert(k, []);
       `,
       errors: [{messageId: 'preferGetOrInsert'}]
+    }
+  ]
+});
+
+typedRuleTester.run('prefer-get-or-insert (typed)', preferGetOrInsert, {
+  valid: [
+    // nullable default
+    'declare const map: Map<string, number[]>; declare function fn(): number[] | undefined; map.set("a", map.get("a") ?? fn());',
+    'declare const map: Map<string, number[]>; declare function fn(): number[] | null; const v = map.get("a") ?? fn(); map.set("a", v);',
+
+    // nullable map values
+    'declare const map: Map<string, number | undefined>; map.set("a", map.get("a") ?? 1);',
+    'function f<T>(map: Map<string, T>, d: NonNullable<T>) { map.set("a", map.get("a") ?? d); }',
+
+    // falsy map values
+    'declare const map: Map<string, number>; let v = map.get("a"); if (!v) { v = 1; map.set("a", v); }',
+
+    // falsy default
+    'declare const map: Map<string, object>; declare const d: object | false; let v = map.get("a"); if (!v) { v = d; map.set("a", v); }',
+
+    // unknown map values
+    'declare const map: any; map.set("a", map.get("a") ?? 1);'
+  ],
+
+  invalid: [
+    {
+      code: 'declare const map: Map<string, number[]>; map.set("a", map.get("a") ?? []);',
+      output:
+        'declare const map: Map<string, number[]>; map.getOrInsert("a", []);',
+      errors: [
+        {
+          messageId: 'preferGetOrInsert',
+          line: 1,
+          column: 43,
+          endLine: 1,
+          endColumn: 75
+        }
+      ]
+    },
+    // set of a nullable map with a `has` check
+    {
+      code: 'declare const map: Map<string, number | undefined>; map.set("a", map.has("a") ? map.get("a") : 1);',
+      output:
+        'declare const map: Map<string, number | undefined>; map.getOrInsert("a", 1);',
+      errors: [
+        {
+          messageId: 'preferGetOrInsert',
+          line: 1,
+          column: 53,
+          endLine: 1,
+          endColumn: 98
+        }
+      ]
+    },
+    // set of a non-nullable map with a default
+    {
+      code: 'declare const map: Map<string, number[]>; const v = map.get("a") ?? []; map.set("a", v);',
+      output:
+        'declare const map: Map<string, number[]>; const v = map.getOrInsert("a", []);',
+      errors: [
+        {
+          messageId: 'preferGetOrInsert',
+          line: 1,
+          column: 53,
+          endLine: 1,
+          endColumn: 71
+        }
+      ]
+    },
+    // set of a non-nullable map with an if
+    {
+      code: 'declare const map: Map<string, number[]>; let v = map.get("a"); if (!v) { v = []; map.set("a", v); }',
+      output:
+        'declare const map: Map<string, number[]>; let v = map.getOrInsert("a", []);',
+      errors: [
+        {
+          messageId: 'preferGetOrInsert',
+          line: 1,
+          column: 65,
+          endLine: 1,
+          endColumn: 101
+        }
+      ]
     }
   ]
 });

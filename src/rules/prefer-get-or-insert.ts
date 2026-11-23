@@ -1,7 +1,57 @@
 import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
+import type ts from 'typescript';
+import {tryGetTypedParserServices} from '../utils/typescript.js';
 
 type MessageIds = 'preferGetOrInsert';
 type Context = Readonly<TSESLint.RuleContext<MessageIds, []>>;
+
+function getMapValueType(
+  type: ts.Type,
+  checker: ts.TypeChecker
+): ts.Type | undefined {
+  const set = checker.getPropertyOfType(checker.getApparentType(type), 'set');
+  if (!set) return undefined;
+  const signatures = checker.getTypeOfSymbol(set).getCallSignatures();
+  if (signatures.length !== 1) return undefined;
+  const value = signatures[0]!.getParameters()[1];
+  return value ? checker.getTypeOfSymbol(value) : undefined;
+}
+
+function excludesNullishOrFalsyValues(
+  context: Context,
+  object: TSESTree.Node,
+  fallback: TSESTree.Node,
+  falsy: boolean
+): boolean {
+  const services = tryGetTypedParserServices(context);
+  if (!services) return true;
+
+  const checker = services.program.getTypeChecker();
+  const valueType = getMapValueType(
+    services.getTypeAtLocation(object),
+    checker
+  );
+  if (!valueType) return false;
+
+  const excludedTypes = [checker.getUndefinedType(), checker.getNullType()];
+  if (falsy) {
+    excludedTypes.push(
+      checker.getFalseType(),
+      checker.getNumberLiteralType(0),
+      checker.getStringLiteralType(''),
+      checker.getBigIntLiteralType({negative: false, base10Value: '0'})
+    );
+  }
+
+  return [valueType, services.getTypeAtLocation(fallback)].every((type) => {
+    const constraint =
+      checker.getBaseConstraintOfType(type) ??
+      (type.isTypeParameter() ? checker.getUnknownType() : type);
+    return excludedTypes.every(
+      (excludedType) => !checker.isTypeAssignableTo(excludedType, constraint)
+    );
+  });
+}
 
 function isMemberCall(
   node: TSESTree.Node,
@@ -157,6 +207,18 @@ function visitAssignment(
 
   if (!setStatement) return;
 
+  if (
+    valueNode.type === 'LogicalExpression' &&
+    !excludesNullishOrFalsyValues(
+      context,
+      pattern.object,
+      pattern.fallback,
+      false
+    )
+  ) {
+    return;
+  }
+
   context.report({
     node: valueNode,
     messageId: 'preferGetOrInsert',
@@ -245,6 +307,17 @@ function visitIfStatement(context: Context, node: TSESTree.Node) {
     return;
   }
 
+  if (
+    !excludesNullishOrFalsyValues(
+      context,
+      get.callee.object,
+      assign.right,
+      true
+    )
+  ) {
+    return;
+  }
+
   const pattern = {
     object: get.callee.object,
     key: get.arguments[0],
@@ -307,6 +380,18 @@ export const preferGetOrInsert: TSESLint.RuleModule<MessageIds, []> = {
           sourceCode.getText(pattern.object) !==
             sourceCode.getText(node.callee.object) ||
           sourceCode.getText(pattern.key) !== sourceCode.getText(key)
+        ) {
+          return;
+        }
+
+        if (
+          value.type === 'LogicalExpression' &&
+          !excludesNullishOrFalsyValues(
+            context,
+            pattern.object,
+            pattern.fallback,
+            false
+          )
         ) {
           return;
         }
