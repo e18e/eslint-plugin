@@ -66,7 +66,7 @@ const plugin: ESLint.Plugin = {
     'no-spread-in-reduce': noSpreadInReduce,
     'prefer-flatmap-over-map-flat': preferFlatMapOverMapFlat,
     'prefer-static-collator': preferStaticCollator,
-    'prefer-get-or-insert': preferGetOrInsert,
+    'prefer-get-or-insert': preferGetOrInsert as never as Rule.RuleModule,
     'prefer-charcode-at-in-loop':
       preferCharCodeAtInLoop as never as Rule.RuleModule,
     'prefer-slice-over-split-index': preferSliceOverSplitIndex,

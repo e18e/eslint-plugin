@@ -8,7 +8,7 @@ const ruleTester = new RuleTester({
   }
 });
 
-ruleTester.run('prefer-get-or-insert', preferGetOrInsert, {
+ruleTester.run('prefer-get-or-insert', preferGetOrInsert as never, {
   valid: [
     // plain get/set, no default
     'map.set(k, map.get(k));',
