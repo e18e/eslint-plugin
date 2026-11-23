@@ -1,17 +1,66 @@
-import type {Rule, SourceCode} from 'eslint';
-import type {
-  CallExpression,
-  Expression,
-  Identifier,
-  MemberExpression,
-  Node
-} from 'estree';
+import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
+import type ts from 'typescript';
+import {tryGetTypedParserServices} from '../utils/typescript.js';
+
+type MessageIds = 'preferGetOrInsert';
+type Context = Readonly<TSESLint.RuleContext<MessageIds, []>>;
+
+function getMapValueType(
+  type: ts.Type,
+  checker: ts.TypeChecker
+): ts.Type | undefined {
+  const set = checker.getPropertyOfType(checker.getApparentType(type), 'set');
+  if (!set) return undefined;
+  const signatures = checker.getTypeOfSymbol(set).getCallSignatures();
+  if (signatures.length !== 1) return undefined;
+  const value = signatures[0]!.getParameters()[1];
+  return value ? checker.getTypeOfSymbol(value) : undefined;
+}
+
+function excludesNullishOrFalsyValues(
+  context: Context,
+  object: TSESTree.Node,
+  fallback: TSESTree.Node,
+  falsy: boolean
+): boolean {
+  const services = tryGetTypedParserServices(context);
+  if (!services) return true;
+
+  const checker = services.program.getTypeChecker();
+  const valueType = getMapValueType(
+    services.getTypeAtLocation(object),
+    checker
+  );
+  if (!valueType) return false;
+
+  const excludedTypes = [checker.getUndefinedType(), checker.getNullType()];
+  if (falsy) {
+    excludedTypes.push(
+      checker.getFalseType(),
+      checker.getNumberLiteralType(0),
+      checker.getStringLiteralType(''),
+      checker.getBigIntLiteralType({negative: false, base10Value: '0'})
+    );
+  }
+
+  return [valueType, services.getTypeAtLocation(fallback)].every((type) => {
+    const constraint =
+      checker.getBaseConstraintOfType(type) ??
+      (type.isTypeParameter() ? checker.getUnknownType() : type);
+    return excludedTypes.every(
+      (excludedType) => !checker.isTypeAssignableTo(excludedType, constraint)
+    );
+  });
+}
 
 function isMemberCall(
-  node: Node,
+  node: TSESTree.Node,
   name: string
-): node is CallExpression & {
-  callee: MemberExpression & {object: Expression; property: Identifier};
+): node is TSESTree.CallExpression & {
+  callee: TSESTree.MemberExpression & {
+    object: TSESTree.Expression;
+    property: TSESTree.Identifier;
+  };
 } {
   return (
     node.type === 'CallExpression' &&
@@ -25,9 +74,12 @@ function isMemberCall(
   );
 }
 
-function isMapGet(node: Node): node is CallExpression & {
-  callee: MemberExpression & {object: Expression; property: Identifier};
-  arguments: [Expression];
+function isMapGet(node: TSESTree.Node): node is TSESTree.CallExpression & {
+  callee: TSESTree.MemberExpression & {
+    object: TSESTree.Expression;
+    property: TSESTree.Identifier;
+  };
+  arguments: [TSESTree.Expression];
 } {
   if (!isMemberCall(node, 'get')) return false;
   if (node.arguments.length !== 1) return false;
@@ -36,7 +88,10 @@ function isMapGet(node: Node): node is CallExpression & {
   return true;
 }
 
-function extractDefaultPattern(node: Expression, sourceCode: SourceCode) {
+function extractDefaultPattern(
+  node: TSESTree.Expression,
+  sourceCode: TSESLint.SourceCode
+) {
   if (node.type === 'LogicalExpression' && node.operator === '??') {
     if (!isMapGet(node.left)) return null;
     return {
@@ -76,8 +131,12 @@ function extractDefaultPattern(node: Expression, sourceCode: SourceCode) {
 }
 
 function buildReplacement(
-  pattern: {object: Expression; key: Expression; fallback: Expression},
-  sourceCode: SourceCode
+  pattern: {
+    object: TSESTree.Expression;
+    key: TSESTree.Expression;
+    fallback: TSESTree.Expression;
+  },
+  sourceCode: TSESLint.SourceCode
 ) {
   const object = sourceCode.getText(pattern.object);
   const key = sourceCode.getText(pattern.key);
@@ -85,7 +144,7 @@ function buildReplacement(
   return `${object}.getOrInsert(${key}, ${fallback})`;
 }
 
-function getStatementList(node: Rule.Node): Node[] | null {
+function getStatementList(node: TSESTree.Node): TSESTree.Node[] | null {
   switch (node.type) {
     case 'Program':
     case 'BlockStatement':
@@ -99,10 +158,10 @@ function getStatementList(node: Rule.Node): Node[] | null {
 }
 
 function visitAssignment(
-  context: Rule.RuleContext,
-  valueNode: Expression,
+  context: Context,
+  valueNode: TSESTree.Expression,
   variableName: string,
-  statement: Rule.Node
+  statement: TSESTree.Node
 ) {
   if (!statement.parent) return;
 
@@ -119,7 +178,7 @@ function visitAssignment(
   const objectText = sourceCode.getText(pattern.object);
   const keyText = sourceCode.getText(pattern.key);
 
-  let setStatement: Node | null = null;
+  let setStatement: TSESTree.Node | null = null;
   for (let i = index + 1; i < body.length; i++) {
     const stmt = body[i];
     if (stmt?.type !== 'ExpressionStatement') continue;
@@ -148,6 +207,18 @@ function visitAssignment(
 
   if (!setStatement) return;
 
+  if (
+    valueNode.type === 'LogicalExpression' &&
+    !excludesNullishOrFalsyValues(
+      context,
+      pattern.object,
+      pattern.fallback,
+      false
+    )
+  ) {
+    return;
+  }
+
   context.report({
     node: valueNode,
     messageId: 'preferGetOrInsert',
@@ -168,7 +239,7 @@ function visitAssignment(
   });
 }
 
-function visitIfStatement(context: Rule.RuleContext, node: Rule.Node) {
+function visitIfStatement(context: Context, node: TSESTree.Node) {
   if (node.type !== 'IfStatement' || node.alternate) return;
 
   const body = getStatementList(node.parent);
@@ -236,6 +307,17 @@ function visitIfStatement(context: Rule.RuleContext, node: Rule.Node) {
     return;
   }
 
+  if (
+    !excludesNullishOrFalsyValues(
+      context,
+      get.callee.object,
+      assign.right,
+      true
+    )
+  ) {
+    return;
+  }
+
   const pattern = {
     object: get.callee.object,
     key: get.arguments[0],
@@ -257,13 +339,12 @@ function visitIfStatement(context: Rule.RuleContext, node: Rule.Node) {
   });
 }
 
-export const preferGetOrInsert: Rule.RuleModule = {
+export const preferGetOrInsert: TSESLint.RuleModule<MessageIds, []> = {
   meta: {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer `Map.prototype.getOrInsert()` over reading an entry with a default and writing it back',
-      recommended: false
+        'Prefer `Map.prototype.getOrInsert()` over reading an entry with a default and writing it back'
     },
     fixable: 'code',
     schema: [],
@@ -272,13 +353,14 @@ export const preferGetOrInsert: Rule.RuleModule = {
         'Use `map.getOrInsert(key, default)` instead of reading the entry with a default and setting it back.'
     }
   },
+  defaultOptions: [],
   create(context) {
     const {sourceCode} = context;
 
     return {
       // map.set(k, map.get(k) ?? default)
       // map.set(k, map.has(k) ? map.get(k) : default)
-      CallExpression(node: CallExpression) {
+      CallExpression(node: TSESTree.CallExpression) {
         if (!isMemberCall(node, 'set')) return;
         if (node.arguments.length !== 2) return;
         const [key, value] = node.arguments;
@@ -298,6 +380,18 @@ export const preferGetOrInsert: Rule.RuleModule = {
           sourceCode.getText(pattern.object) !==
             sourceCode.getText(node.callee.object) ||
           sourceCode.getText(pattern.key) !== sourceCode.getText(key)
+        ) {
+          return;
+        }
+
+        if (
+          value.type === 'LogicalExpression' &&
+          !excludesNullishOrFalsyValues(
+            context,
+            pattern.object,
+            pattern.fallback,
+            false
+          )
         ) {
           return;
         }
