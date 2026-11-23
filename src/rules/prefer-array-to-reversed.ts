@@ -2,7 +2,8 @@ import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
 import {
   getArrayFromCopyPattern,
   needsParensForPropertyAccess,
-  isCopyPatternOptional
+  isCopyPatternOptional,
+  resolvesToKnownNonArrayCopySource
 } from '../utils/ast.js';
 import {isArrayType} from '../utils/typescript.js';
 
@@ -40,7 +41,15 @@ export const preferArrayToReversed: TSESLint.RuleModule<MessageIds, []> = {
         const arrayNode = getArrayFromCopyPattern(reverseCallee);
 
         if (arrayNode) {
-          if (isArrayType(arrayNode, context) === false) {
+          const arrayType = isArrayType(arrayNode, context);
+          if (arrayType === false) {
+            return;
+          }
+
+          if (
+            !arrayType &&
+            resolvesToKnownNonArrayCopySource(arrayNode, context)
+          ) {
             return;
           }
 
