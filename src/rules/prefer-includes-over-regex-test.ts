@@ -1,7 +1,11 @@
-import type {Rule} from 'eslint';
-import type {CallExpression, Expression, RegExpLiteral} from 'estree';
+import type {TSESLint, TSESTree} from '@typescript-eslint/utils';
+import {isStringType} from '../utils/typescript.js';
 
-function isRegexLiteral(node: Expression): node is RegExpLiteral {
+type MessageIds =
+  'preferIncludes' | 'preferStartsWith' | 'preferEndsWith' | 'preferEquals';
+type RuleModule = TSESLint.RuleModule<MessageIds, []>;
+
+function isRegexLiteral(node: TSESTree.Node): node is TSESTree.RegExpLiteral {
   return node.type === 'Literal' && 'regex' in node && node.regex !== undefined;
 }
 
@@ -36,7 +40,7 @@ function classifyRegex(pattern: string): {kind: Kind; literal: string} | null {
   return {kind, literal: body};
 }
 
-function needsParens(node: Expression): boolean {
+function needsParens(node: TSESTree.Node): boolean {
   switch (node.type) {
     case 'Identifier':
     case 'Literal':
@@ -54,13 +58,12 @@ function needsParens(node: Expression): boolean {
   }
 }
 
-export const preferIncludesOverRegexTest: Rule.RuleModule = {
+export const preferIncludesOverRegexTest: RuleModule = {
   meta: {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer String.prototype.{includes,startsWith,endsWith} over equivalent regex.test() calls',
-      recommended: false
+        'Prefer String.prototype.{includes,startsWith,endsWith} over equivalent regex.test() calls'
     },
     fixable: 'code',
     schema: [],
@@ -75,10 +78,11 @@ export const preferIncludesOverRegexTest: Rule.RuleModule = {
         "Prefer `s === '{{literal}}'` over `/^{{literal}}$/.test(s)`."
     }
   },
+  defaultOptions: [],
   create(context) {
     const sourceCode = context.sourceCode;
     return {
-      CallExpression(node: CallExpression) {
+      CallExpression(node: TSESTree.CallExpression) {
         if (node.callee.type !== 'MemberExpression') return;
         if (node.callee.computed) return;
         if (
@@ -89,7 +93,7 @@ export const preferIncludesOverRegexTest: Rule.RuleModule = {
         if (node.arguments.length !== 1) return;
 
         const regex = node.callee.object;
-        if (regex.type !== 'Literal' || !isRegexLiteral(regex)) return;
+        if (!isRegexLiteral(regex)) return;
         if (regex.regex.flags !== '') return;
 
         const cls = classifyRegex(regex.regex.pattern);
@@ -97,13 +101,16 @@ export const preferIncludesOverRegexTest: Rule.RuleModule = {
 
         const arg = node.arguments[0]!;
         if (arg.type === 'SpreadElement') return;
-        const argText = needsParens(arg as Expression)
+        // `.test()` converts its argument to a string, the string methods don't.
+        // `any` counts as a string here, since that's what the type says.
+        if (isStringType(arg, context) === false) return;
+        const argText = needsParens(arg)
           ? `(${sourceCode.getText(arg)})`
           : sourceCode.getText(arg);
         const literalText = JSON.stringify(cls.literal);
 
         let replacement: string;
-        let messageId: string;
+        let messageId: MessageIds;
         switch (cls.kind) {
           case 'includes':
             replacement = `${argText}.includes(${literalText})`;

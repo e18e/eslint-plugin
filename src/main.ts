@@ -61,7 +61,8 @@ const plugin: ESLint.Plugin = {
     'prefer-static-regex': preferStaticRegex,
     'prefer-inline-equality': preferInlineEquality as never as Rule.RuleModule,
     'prefer-string-fromcharcode': preferStringFromCharCode,
-    'prefer-includes-over-regex-test': preferIncludesOverRegexTest,
+    'prefer-includes-over-regex-test':
+      preferIncludesOverRegexTest as never as Rule.RuleModule,
     'no-delete-property': noDeleteProperty,
     'no-spread-in-reduce': noSpreadInReduce,
     'prefer-flatmap-over-map-flat': preferFlatMapOverMapFlat,
