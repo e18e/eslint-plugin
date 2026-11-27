@@ -1,5 +1,14 @@
 import {RuleTester} from 'eslint';
+import {RuleTester as TSRuleTester} from '@typescript-eslint/rule-tester';
+import {parseForESLint} from '@typescript-eslint/parser';
+import * as path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {preferArrayFill} from './prefer-array-fill.js';
+
+const rootDir = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../..'
+);
 
 const ruleTester = new RuleTester({
   languageOptions: {
@@ -8,7 +17,28 @@ const ruleTester = new RuleTester({
   }
 });
 
-ruleTester.run('prefer-array-fill', preferArrayFill, {
+const tsSyntaxRuleTester = new TSRuleTester({
+  languageOptions: {
+    parserOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module'
+    }
+  }
+});
+
+const typedRuleTester = new TSRuleTester({
+  languageOptions: {
+    parserOptions: {
+      projectService: {
+        allowDefaultProject: ['*.ts'],
+        defaultProject: './tsconfig.json'
+      },
+      tsconfigRootDir: rootDir
+    }
+  }
+});
+
+ruleTester.run('prefer-array-fill', preferArrayFill as never, {
   valid: [
     // Already using .fill()
     'const arr = Array.from({length: 5}).fill(0)',
@@ -159,6 +189,509 @@ const arr2 = Array(3).fill("test");`,
       code: 'const arr = [...Array(5)].map(() => a ? b : c)',
       output: 'const arr = Array(5).fill(a ? b : c)',
       errors: [{messageId: 'preferFillSpreadMap'}]
+    }
+  ]
+});
+
+tsSyntaxRuleTester.run(
+  'prefer-array-fill (typescript syntax)',
+  preferArrayFill,
+  {
+    valid: [
+      'const arr = Array.from<number>({length: 5}).fill(0)',
+      'const arr = Array<number>(5).fill(0)',
+      'const arr = Array.from({length: 5}, (_, i) => i)'
+    ],
+    invalid: [
+      // .ts default filename: do not autofix; suggest typed form for literal
+      {
+        code: 'const a = Array.from({length: n}, () => 0)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output: 'const a = Array.from<number>({length: n}).fill(0)'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        code: 'const b = [...Array(n)].map(() => 0)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillSpreadMap',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFill',
+                output: 'const b = Array<number>(n).fill(0)'
+              }
+            ]
+          }
+        ]
+      },
+      // Various TS file extensions: .tsx, .mts, .cts, and virtual Vue TS block
+      {
+        filename: 'Component.tsx',
+        code: 'const arr = Array.from({length: 3}, () => "test")',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output:
+                  'const arr = Array.from<string>({length: 3}).fill("test")'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        filename: 'utils.mts',
+        code: 'const arr = [...Array(3)].map(() => true)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillSpreadMap',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFill',
+                output: 'const arr = Array<boolean>(3).fill(true)'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        filename: 'utils.cts',
+        code: 'const arr = Array.from({length: n}, () => null)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output: 'const arr = Array.from<null>({length: n}).fill(null)'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        filename: 'Component.vue/0_script.ts',
+        code: 'const arr = Array.from({length: n}, () => 0)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output: 'const arr = Array.from<number>({length: n}).fill(0)'
+              }
+            ]
+          }
+        ]
+      },
+      // Non-literal identifier without type info: suggest untyped fill without autofixing
+      {
+        code: 'const arr = Array.from({length: n}, () => defaultValue)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output: 'const arr = Array.from({length: n}).fill(defaultValue)'
+              }
+            ]
+          }
+        ]
+      },
+      // Preserves explicit return type argument on Array.from<T, U>
+      {
+        code: 'const arr = Array.from<unknown, MyType>({length: n}, () => initial)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output:
+                  'const arr = Array.from<MyType>({length: n}).fill(initial)'
+              }
+            ]
+          }
+        ]
+      },
+      // Preserves explicit return type argument on [...Array(n)].map<U>
+      {
+        code: 'const arr = [...Array(n)].map<0 | 1>(() => 0)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillSpreadMap',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFill',
+                output: 'const arr = Array<0 | 1>(n).fill(0)'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        code: 'const arr = [...Array(n)].map<MyType>(() => initial)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillSpreadMap',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFill',
+                output: 'const arr = Array<MyType>(n).fill(initial)'
+              }
+            ]
+          }
+        ]
+      },
+      // Detects TypeScript via Array<T>(n) type argument even with non-.ts filename
+      {
+        filename: '<input>',
+        code: 'const arr = [...Array<unknown>(n)].map(() => 0)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillSpreadMap',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFill',
+                output: 'const arr = Array<number>(n).fill(0)'
+              }
+            ]
+          }
+        ]
+      },
+      // Unary/binary expressions: only infer number/bigint when operands are known
+      {
+        code: 'const arr = Array.from({length: n}, () => -1)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output: 'const arr = Array.from<number>({length: n}).fill(-1)'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        code: 'const arr = Array.from({length: n}, () => -1n)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output: 'const arr = Array.from<bigint>({length: n}).fill(-1n)'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        code: 'const arr = Array.from({length: n}, () => -unknownVar)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output: 'const arr = Array.from({length: n}).fill(-unknownVar)'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        code: 'const arr = Array.from({length: n}, () => x * y)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output: 'const arr = Array.from({length: n}).fill(x * y)'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        code: 'const arr = Array.from({length: n}, () => +x)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output: 'const arr = Array.from<number>({length: n}).fill(+x)'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        code: 'const arr = Array.from({length: n}, () => x >>> 1)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output:
+                  'const arr = Array.from<number>({length: n}).fill(x >>> 1)'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        code: 'const arr = Array.from({length: n}, () => 2n * 3n)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output:
+                  'const arr = Array.from<bigint>({length: n}).fill(2n * 3n)'
+              }
+            ]
+          }
+        ]
+      },
+      // Narrow contextual type (e.g. union literal): no unsafe autofix
+      {
+        code: 'type Bit = 0 | 1; const bits: Bit[] = Array.from({length: n}, () => 0)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output:
+                  'type Bit = 0 | 1; const bits: Bit[] = Array.from<number>({length: n}).fill(0)'
+              }
+            ]
+          }
+        ]
+      },
+      // Plain .js file parsed with @typescript-eslint/parser still autofixes
+      {
+        filename: 'plain.js',
+        code: 'const arr = Array.from({length: n}, () => 0)',
+        output: 'const arr = Array.from({length: n}).fill(0)',
+        errors: [{messageId: 'preferFillArrayFrom'}]
+      }
+    ]
+  }
+);
+
+// Verify Vue SFC `<script lang="ts">` detection via vue-eslint-parser's getDocumentFragment()
+function createMockVueParser(lang?: string) {
+  return {
+    parseForESLint(code: string, options: Record<string, unknown>) {
+      const result = parseForESLint(code, options);
+      const attributes = lang
+        ? [{type: 'VAttribute', key: {name: 'lang'}, value: {value: lang}}]
+        : [];
+      return {
+        ...result,
+        services: {
+          ...result.services,
+          getDocumentFragment: () => ({
+            children: [
+              {
+                type: 'VElement',
+                name: 'script',
+                startTag: {attributes}
+              }
+            ]
+          })
+        }
+      };
+    }
+  };
+}
+
+const vueTsRuleTester = new RuleTester({
+  languageOptions: {
+    parser: createMockVueParser('ts') as never,
+    ecmaVersion: 2022,
+    sourceType: 'module'
+  }
+});
+
+vueTsRuleTester.run(
+  'prefer-array-fill (vue lang="ts")',
+  preferArrayFill as never,
+  {
+    valid: [],
+    invalid: [
+      {
+        filename: 'Component.vue',
+        code: 'const arr = Array.from({length: n}, () => 0)',
+        output: null,
+        errors: [
+          {
+            messageId: 'preferFillArrayFrom',
+            suggestions: [
+              {
+                messageId: 'replaceWithArrayFromFill',
+                output: 'const arr = Array.from<number>({length: n}).fill(0)'
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+);
+
+const vueJsRuleTester = new RuleTester({
+  languageOptions: {
+    parser: createMockVueParser() as never,
+    ecmaVersion: 2022,
+    sourceType: 'module'
+  }
+});
+
+vueJsRuleTester.run('prefer-array-fill (vue js)', preferArrayFill as never, {
+  valid: [],
+  invalid: [
+    {
+      filename: 'Component.vue',
+      code: 'const arr = Array.from({length: n}, () => 0)',
+      output: 'const arr = Array.from({length: n}).fill(0)',
+      errors: [{messageId: 'preferFillArrayFrom'}]
+    }
+  ]
+});
+
+typedRuleTester.run('prefer-array-fill (typed)', preferArrayFill, {
+  valid: [
+    'const arr = Array.from<number>({length: 5}).fill(0);',
+    'const arr = Array<number>(5).fill(0);'
+  ],
+  invalid: [
+    // Issue #179 repro: inferred number[] must not be autofixed to unknown[] or any[]
+    {
+      code: `
+        const n = 3;
+        const a = Array.from({length: n}, () => 0);
+      `,
+      output: null,
+      errors: [
+        {
+          messageId: 'preferFillArrayFrom',
+          suggestions: [
+            {
+              messageId: 'replaceWithArrayFromFill',
+              output: `
+        const n = 3;
+        const a = Array.from<number>({length: n}).fill(0);
+      `
+            }
+          ]
+        }
+      ]
+    },
+    {
+      code: `
+        const n = 3;
+        const b = [...Array(n)].map(() => 0);
+      `,
+      output: null,
+      errors: [
+        {
+          messageId: 'preferFillSpreadMap',
+          suggestions: [
+            {
+              messageId: 'replaceWithArrayFill',
+              output: `
+        const n = 3;
+        const b = Array<number>(n).fill(0);
+      `
+            }
+          ]
+        }
+      ]
+    },
+    // Typed variable value infers primitive type argument for suggestion
+    {
+      code: `
+        declare const label: string;
+        const arr = Array.from({length: 3}, () => label);
+      `,
+      output: null,
+      errors: [
+        {
+          messageId: 'preferFillArrayFrom',
+          suggestions: [
+            {
+              messageId: 'replaceWithArrayFromFill',
+              output: `
+        declare const label: string;
+        const arr = Array.from<string>({length: 3}).fill(label);
+      `
+            }
+          ]
+        }
+      ]
+    },
+    // Complex object reference does not emit unimportable type text
+    {
+      code: `
+        interface Item { id: number }
+        declare const item: Item;
+        const arr = [...Array(3)].map(() => item);
+      `,
+      output: null,
+      errors: [
+        {
+          messageId: 'preferFillSpreadMap',
+          suggestions: [
+            {
+              messageId: 'replaceWithArrayFill',
+              output: `
+        interface Item { id: number }
+        declare const item: Item;
+        const arr = Array(3).fill(item);
+      `
+            }
+          ]
+        }
+      ]
     }
   ]
 });
